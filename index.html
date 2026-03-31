@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的互動地圖 - 解鎖關卡</title>
+    <link rel="stylesheet" href="style.css"> <!-- 原有樣式表完全未動 -->
+    <!-- 引入 Google Fonts 炫酷字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ----- 原有彈出視窗樣式 (與之前完全一致) ----- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .modal-rectangle {
+            background-color: #ffffff;
+            padding: 40px 50px;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            max-width: 95vw;
+        }
+        .modal-squares {
+            display: flex;
+            flex-direction: row;
+            gap: 50px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .square {
+            width: 260px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: #f5f0e7;
+            border: 4px solid #9e7e5e;
+            border-radius: 24px;
+            text-decoration: none;
+            color: #4a3729;
+            font-weight: bold;
+            font-size: 1.4rem;
+            padding: 10px;
+            box-sizing: border-box;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            gap: 10px;
+        }
+        .square:hover {
+            background-color: #e6d7c4;
+            transform: scale(1.02);
+            border-color: #7c5e42;
+        }
+        .square:active {
+            transform: scale(0.98);
+        }
+        .square-img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            display: block;
+            background-color: transparent;
+            padding: 0;
+            box-shadow: none;
+        }
+        .square-text {
+            margin-top: 0;
+            line-height: 1.3;
+        }
+        /* 已完成的正方形樣式：綠色打勾 */
+        .square.completed {
+            background-color: #a5d6a5;
+            border-color: #2e7d32;
+            position: relative;
+        }
+        .square.completed::after {
+            content: "✓";
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 40px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        /* ----- 語言切換器 (右上角) ----- */
+        .lang-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            background-color: #ffffff;
+            border-radius: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 3px;
+            display: flex;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            border: 1px solid #d0d0d0;
+        }
+        .lang-option {
+            padding: 6px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            color: #555;
+            user-select: none;
+            text-align: center;
+            min-width: 45px;
+        }
+        .lang-option.active {
+            background-color: #9e7e5e;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .lang-option:not(.active):hover {
+            background-color: #f0f0f0;
+        }
+
+        /* ----- 按鈕下方文字樣式（完全獨立）----- */
+        .btn-label {
+            position: absolute;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 4px 0;
+            border-radius: 20px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        /* ----- 全屏內嵌框架 (支援攝像頭/麥克風) ----- */
+        .frame-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 20000;
+            display: none;
+            flex-direction: column;
+        }
+        .frame-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ccc;
+        }
+        .close-frame {
+            background: none;
+            border: none;
+            font-size: 36px;
+            cursor: pointer;
+            color: #333;
+            padding: 0 15px;
+            line-height: 1;
+            font-weight: bold;
+        }
+        .close-frame:hover {
+            color: #000;
+        }
+        .frame-content {
+            flex: 1;
+            width: 100%;
+            border: none;
+        }
+
+        /* ----- 解鎖模式：鎖定的按鈕樣式 ----- */
+        .map-btn.locked {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+
+        /* ----- 解鎖特效（脈衝發光） ----- */
+        @keyframes unlockPulse {
+            0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); }
+            50% { box-shadow: 0 0 20px 10px rgba(46, 125, 50, 0.5); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); }
+        }
+        .map-btn.unlock-effect,
+        .square.unlock-effect {
+            animation: unlockPulse 1s ease-out;
+        }
+
+        /* ----- 左下角 SEJADIN 文字（炫酷字體，配合背景）----- */
+        .sejadin {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10001;
+            font-family: 'Poppins', 'Impact', 'Arial Black', sans-serif;
+            font-size: 64px;
+            font-weight: 900;
+            color: #ffd966;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 
+                3px 3px 0 #8b5a2b,
+                6px 6px 0 rgba(0,0,0,0.3),
+                0 0 20px rgba(255,215,0,0.8);
+            background: linear-gradient(135deg, #f5e7c8 0%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 4px 6px black);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* ----- 警告彈窗樣式（用於萌芽谷完成後）----- */
+        .warning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 30000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .warning-text {
+            font-size: 80px;
+            font-weight: 900;
+            color: red;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff6666;
+            animation: warningPop 0.8s ease-in-out 3;
+            margin-bottom: 40px;
+        }
+        @keyframes warningPop {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .warning-form-container {
+            background-color: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            width: 80%;
+            max-width: 800px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        .warning-iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 12px;
+        }
+        .submit-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* ===== 新增：左上角設置按鈕 ===== */
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10002;
+            background-color: #9e7e5e;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 2px solid #ffffff;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .settings-btn:hover {
+            background-color: #7c5e42;
+            transform: scale(1.05);
+        }
+        .settings-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== 新增：設置彈窗 (正方形) ===== */
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 40000;
+        }
+        .settings-square {
+            width: 400px;
+            height: 400px;
+            background-color: #ffffff;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .settings-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 36px;
+            cursor: pointer;
+            color: #555;
+            line-height: 1;
+        }
+        .settings-close:hover {
+            color: #000;
+        }
+        .settings-item {
+            margin: 20px 0;
+            width: 100%;
+            text-align: center;
+        }
+        .fullscreen-btn {
+            background-color: #9e7e5e;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            width: 80%;
+            max-width: 250px;
+            margin: 0 auto;
+            transition: background-color 0.2s;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .fullscreen-btn:hover {
+            background-color: #7c5e42;
+        }
+        .volume-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .volume-label {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4a3729;
+            margin-bottom: 10px;
+        }
+        .volume-slider {
+            width: 80%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #9e7e5e;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .volume-slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: #9e7e5e;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 新增：左上角設置按鈕 (⚙️) -->
+    <div class="settings-btn" id="settingsBtn">⚙️</div>
+
+    <!-- 新增：設置彈窗 -->
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-square">
+            <div class="settings-close" id="settingsClose">&times;</div>
+            <div class="settings-item">
+                <button id="fullscreenToggle" class="fullscreen-btn" data-bm="Skrin Penuh" data-zh="全屏">Skrin Penuh</button>
+            </div>
+            <div class="settings-item volume-control">
+                <span id="volumeLabel" class="volume-label" data-bm="Kelantangan" data-zh="音量">Kelantangan</span>
+                <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+    </div>
+
+    <!-- 背景音樂 (自動播放會被瀏覽器阻止，將在用戶首次點擊時激活) -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="background.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- 左下角 SEJADIN 文字 -->
+    <div class="sejadin">SEJADIN</div>
+
+    <!-- 右上角語言切換器 -->
+    <div class="lang-switcher" id="langSwitcher">
+        <div class="lang-option active" data-lang="bm">BM</div>
+        <div class="lang-option" data-lang="zh">中文</div>
+    </div>
+
+    <!-- 全屏內嵌框架 -->
+    <div id="frameOverlay" class="frame-overlay">
+        <div class="frame-header">
+            <button class="close-frame" id="closeFrameBtn">&times;</button>
+        </div>
+        <iframe id="frameContent" class="frame-content" 
+                src="about:blank" 
+                allow="camera; microphone" 
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation">
+        </iframe>
+    </div>
+
+    <!-- 警告彈窗（萌芽谷完成後顯示） -->
+    <div id="warningOverlay" class="warning-overlay">
+        <div id="warningText" class="warning-text">WARNING!!!</div>
+        <div id="warningFormContainer" class="warning-form-container">
+            <iframe id="warningIframe" class="warning-iframe" 
+                    src="about:blank"
+                    allow="camera; microphone"
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"></iframe>
+            <button id="warningSubmitBtn" class="submit-btn">SUBMIT</button>
+        </div>
+    </div>
+
+    <div class="map-container" id="mapContainer">
+        
+        <!-- 背景圖片完全不動 -->
+        <img src="bg-map.jpg" alt="地圖背景" class="bg-image">
+
+        <!-- 制衣坊 (Google 表單連結) -->
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSesLtaTpC9OHvnYH8IWr5bWGWmuhfPfqmfObEimjLQD89hpOw/viewform?usp=header" 
+           class="map-btn item-zhiyi" 
+           target="_blank" 
+           rel="noopener"
+           data-task="zhiyi">
+            <img src="btn-zhiyi.png" alt="制衣坊">
+        </a>
+
+        <!-- 音樂坊 (點擊彈出) -->
+        <a href="#" class="map-btn item-yinyue">
+            <img src="btn-yinyue.png" alt="音樂坊">
+        </a>
+
+        <!-- 萌芽谷 (Google 表單連結) -->
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeqr7Bye3gSpOgzPNHESr4oG6vWg2xw_sZB8m25vDHaelJ-ow/viewform?usp=header" 
+           class="map-btn item-mengya" 
+           target="_blank" 
+           rel="noopener"
+           data-task="mengya">
+            <img src="btn-mengya.png" alt="萌芽谷">
+        </a>
+
+        <!-- 孵化坊 (點擊彈出) -->
+        <a href="#" class="map-btn item-fuhua">
+            <img src="btn-fuhua.png" alt="孵化坊">
+        </a>
+
+        <!-- 泥密坊 (點擊彈出) -->
+        <a href="#" class="map-btn item-nimi">
+            <img src="btn-nimi.png" alt="泥密坊">
+        </a>
+
+        <!-- 廟會 (直接連結) -->
+        <a href="https://hamster-one-eta.vercel.app/" 
+           class="map-btn item-miaohui" 
+           target="_blank" 
+           rel="noopener"
+           data-task="miaohui">
+            <img src="btn-miaohui.png" alt="廟會">
+        </a>
+
+    </div>
+
+    <!-- 三個彈出長方形 UI (內部正方形) -->
+    <div id="yinyueModal" class="modal-overlay">
+        <div class="modal-rectangle">
+            <div class="modal-squares">
+                <a href="https://jatanegaravb.vercel.app/" target="_blank" rel="noopener" class="square left" id="yinyue-left" data-task="yinyue" data-sub="left">
+                    <img class="square-img" src="jata-negara.png" alt="Jata Negara emblem">
+                    <span class="square-text">Jata Negara</span>
+                </a>
+                <a href="https://jalurgemilangvb.vercel.app/" target="_blank" rel="noopener" class="square right" id="yinyue-right" data-task="yinyue" data-sub="right">
+                    <img class="square-img" src="jalur-gemilang.png" alt="Jalur Gemilang flag">
+                    <span class="square-text">Jalur Gemilang</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="fuhuaModal" class="modal-overlay">
+        <div class="modal-rectangle">
+            <div class="modal-squares">
+                <a href="https://read.bookcreator.com/bWyhwslXjFdj06yZsJdAdlqAlyt1/0JK5xn-5RMKw6ns6jP2mUA" target="_blank" rel="noopener" class="square left" id="fuhua-left" data-task="fuhua" data-sub="left">
+                    <img class="square-img" src="jata-negara.png" alt="Jata Negara emblem">
+                    <span class="square-text">Jata Negara</span>
+                </a>
+                <a href="https://read.bookcreator.com/bWyhwslXjFdj06yZsJdAdlqAlyt1/dckzpqEvQCen76Hzq-BKhg" target="_blank" rel="noopener" class="square right" id="fuhua-right" data-task="fuhua" data-sub="right">
+                    <img class="square-img" src="jalur-gemilang.png" alt="Jalur Gemilang flag">
+                    <span class="square-text">Jalur Gemilang</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="nimiModal" class="modal-overlay">
+        <div class="modal-rectangle">
+            <div class="modal-squares">
+                <a href="https://jatanegara-vb.vercel.app/" target="_blank" rel="noopener" class="square left" id="nimi-left" data-task="nimi" data-sub="left">
+                    <img class="square-img" src="jata-negara.png" alt="Jata Negara emblem">
+                    <span class="square-text">Jata Negara</span>
+                </a>
+                <a href="https://jalurgemilang-vb.vercel.app/" target="_blank" rel="noopener" class="square right" id="nimi-right" data-task="nimi" data-sub="right">
+                    <img class="square-img" src="jalur-gemilang.png" alt="Jalur Gemilang flag">
+                    <span class="square-text">Jalur Gemilang</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+            document.addEventListener('DOMContentLoaded', function() {
+
+                // ========== 原有變量 (保持不變) ==========
+                const frameOverlay = document.getElementById('frameOverlay');
+                const frameContent = document.getElementById('frameContent');
+                const closeFrameBtn = document.getElementById('closeFrameBtn');
+                const langSwitcher = document.getElementById('langSwitcher');
+                const langOptions = langSwitcher.querySelectorAll('.lang-option');
+                const mapContainer = document.getElementById('mapContainer');
+
+                const langData = {
+                    'yinyue-left': { bm: { href: 'https://jatanegaravb.vercel.app/', text: 'Jata Negara' }, zh: { href: 'https://jatanegaravc.vercel.app/', text: '国徽' } },
+                    'yinyue-right': { bm: { href: 'https://jalurgemilangvb.vercel.app/', text: 'Jalur Gemilang' }, zh: { href: 'https://jalurgemilangvc.vercel.app/', text: '辉煌条纹' } },
+                    'fuhua-left': { bm: { href: 'https://read.bookcreator.com/bWyhwslXjFdj06yZsJdAdlqAlyt1/0JK5xn-5RMKw6ns6jP2mUA', text: 'Jata Negara' }, zh: { href: 'https://read.bookcreator.com/bWyhwslXjFdj06yZsJdAdlqAlyt1/-Nd6TlJvR-Kx6RowvY9E-Q', text: '国徽' } },
+                    'fuhua-right': { bm: { href: 'https://read.bookcreator.com/bWyhwslXjFdj06yZsJdAdlqAlyt1/dckzpqEvQCen76Hzq-BKhg', text: 'Jalur Gemilang' }, zh: { href: 'https://read.bookcreator.com/bWyhwslXjFdj06yZsJdAdlqAlyt1/KP6FKS5aT-2FrQQ5E8f6NA', text: '辉煌条纹' } },
+                    'nimi-left': { bm: { href: 'https://jatanegara-vb.vercel.app/', text: 'Jata Negara' }, zh: { href: 'https://jatanegara-vc.vercel.app/', text: '国徽' } },
+                    'nimi-right': { bm: { href: 'https://jalurgemilang-vb.vercel.app/', text: 'Jalur Gemilang' }, zh: { href: 'https://jalurgemilang-vc.vercel.app/', text: '辉煌条纹' } }
+                };
+                const leftRightIds = Object.keys(langData);
+                let currentLang = 'bm';
+
+                const order = ['zhiyi', 'fuhua', 'yinyue', 'nimi', 'mengya', 'miaohui'];
+
+                let tasks = {
+                    zhiyi: { completed: false, unlocked: true },
+                    fuhua: { completed: false, unlocked: false, subtasks: { left: false, right: false } },
+                    yinyue: { completed: false, unlocked: false, subtasks: { left: false, right: false } },
+                    nimi: { completed: false, unlocked: false, subtasks: { left: false, right: false } },
+                    mengya: { completed: false, unlocked: false },
+                    miaohui: { completed: false, unlocked: false }
+                };
+
+                let currentTask = null;
+                let currentSub = null;
+
+                // ---------- 語言切換 ----------
+                function setLanguage(lang) {
+                    if (lang === currentLang) return;
+                    leftRightIds.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            const data = langData[id][lang];
+                            if (data) {
+                                el.href = data.href;
+                                const textSpan = el.querySelector('.square-text');
+                                if (textSpan) textSpan.textContent = data.text;
+                            }
+                        }
+                    });
+                    // 更新設置彈窗的文字
+                    updateSettingsLanguage(lang);
+                    currentLang = lang;
+                }
+
+                langOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const lang = this.dataset.lang;
+                        if (lang === currentLang) return;
+                        langOptions.forEach(opt => opt.classList.remove('active'));
+                        this.classList.add('active');
+                        setLanguage(lang);
+                    });
+                });
+
+                // ---------- 彈窗功能 (保留) ----------
+                const modalConfigs = [
+                    { btn: '.item-yinyue', modal: 'yinyueModal' },
+                    { btn: '.item-fuhua', modal: 'fuhuaModal' },
+                    { btn: '.item-nimi', modal: 'nimiModal' }
+                ];
+
+                modalConfigs.forEach(config => {
+                    const btn = document.querySelector(config.btn);
+                    const modal = document.getElementById(config.modal);
+                    if (btn && modal) {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            if (btn.classList.contains('locked')) return;
+                            modal.style.display = 'flex';
+                        });
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === modal) modal.style.display = 'none';
+                        });
+                        const rect = modal.querySelector('.modal-rectangle');
+                        if (rect) rect.addEventListener('click', e => e.stopPropagation());
+                    }
+                });
+
+                // ---------- 按鈕下方文字 (保留) ----------
+                const buttonLabels = [
+                    { selector: '.item-zhiyi', text: 'Ujian Pra' },
+                    { selector: '.item-yinyue', text: 'CITRA' },
+                    { selector: '.item-mengya', text: 'Ujian Pos' },
+                    { selector: '.item-fuhua', text: 'HistoriVerse' },
+                    { selector: '.item-nimi', text: 'SUAR' },
+                    { selector: '.item-miaohui', text: 'Edu-HamQuest' }
+                ];
+
+                buttonLabels.forEach(item => {
+                    const btn = document.querySelector(item.selector);
+                    if (!btn) return;
+                    const label = document.createElement('div');
+                    label.className = 'btn-label';
+                    label.textContent = item.text;
+                    const btnRect = btn.getBoundingClientRect();
+                    const containerRect = mapContainer.getBoundingClientRect();
+                    const left = btnRect.left - containerRect.left;
+                    const offsetY = (item.selector === '.item-mengya') ? -4 : -2;
+                    const top = btnRect.top - containerRect.top + btn.offsetHeight + offsetY;
+                    label.style.left = left + 'px';
+                    label.style.top = top + 'px';
+                    label.style.width = btn.offsetWidth + 'px';
+                    mapContainer.appendChild(label);
+                });
+
+                // ---------- 解鎖狀態更新 ----------
+                function updateUI() {
+                    document.querySelectorAll('.map-btn').forEach(btn => {
+                        let taskId = null;
+                        if (btn.classList.contains('item-zhiyi')) taskId = 'zhiyi';
+                        else if (btn.classList.contains('item-yinyue')) taskId = 'yinyue';
+                        else if (btn.classList.contains('item-mengya')) taskId = 'mengya';
+                        else if (btn.classList.contains('item-fuhua')) taskId = 'fuhua';
+                        else if (btn.classList.contains('item-nimi')) taskId = 'nimi';
+                        else if (btn.classList.contains('item-miaohui')) taskId = 'miaohui';
+                        if (taskId && tasks[taskId]) {
+                            btn.classList.toggle('locked', !tasks[taskId].unlocked);
+                        }
+                    });
+
+                    const squareMap = {
+                        'yinyue-left': 'yinyue', 'yinyue-right': 'yinyue',
+                        'fuhua-left': 'fuhua', 'fuhua-right': 'fuhua',
+                        'nimi-left': 'nimi', 'nimi-right': 'nimi'
+                    };
+                    for (let id in squareMap) {
+                        const el = document.getElementById(id);
+                        if (!el) continue;
+                        const task = squareMap[id];
+                        const sub = id.includes('left') ? 'left' : 'right';
+                        if (tasks[task]?.subtasks?.[sub]) {
+                            el.classList.add('completed');
+                        } else {
+                            el.classList.remove('completed');
+                        }
+                    }
+                }
+
+                function addUnlockEffect(taskId) {
+                    const selectorMap = {
+                        'zhiyi': '.item-zhiyi', 'yinyue': '.item-yinyue', 'mengya': '.item-mengya',
+                        'fuhua': '.item-fuhua', 'nimi': '.item-nimi', 'miaohui': '.item-miaohui'
+                    };
+                    const el = document.querySelector(selectorMap[taskId]);
+                    if (el) {
+                        el.classList.add('unlock-effect');
+                        setTimeout(() => el.classList.remove('unlock-effect'), 1000);
+                    }
+                }
+
+                function unlockNext(completedTaskId) {
+                    const idx = order.indexOf(completedTaskId);
+                    if (idx === -1 || idx === order.length - 1) return;
+                    const next = order[idx + 1];
+                    if (tasks[next]) {
+                        tasks[next].unlocked = true;
+                        addUnlockEffect(next);
+                    }
+                    updateUI();
+                }
+
+                function checkFangCompletion(fangId) {
+                    if (!tasks[fangId]?.subtasks) return false;
+                    const subLeft = tasks[fangId].subtasks.left;
+                    const subRight = tasks[fangId].subtasks.right;
+                    if (subLeft && subRight && !tasks[fangId].completed) {
+                        tasks[fangId].completed = true;
+                        unlockNext(fangId);
+                        return true;
+                    }
+                    return false;
+                }
+
+                function completeTask(taskId, sub) {
+                    if (!tasks[taskId]) return;
+                    if (sub) {
+                        if (tasks[taskId].subtasks && !tasks[taskId].subtasks[sub]) {
+                            tasks[taskId].subtasks[sub] = true;
+                            updateUI();
+                            checkFangCompletion(taskId);
+                        }
+                    } else {
+                        if (!tasks[taskId].completed) {
+                            tasks[taskId].completed = true;
+                            if (taskId === 'mengya') {
+                                showWarningAndForm();
+                            } else {
+                                unlockNext(taskId);
+                            }
+                            updateUI();
+                        }
+                    }
+                }
+
+                // ---------- 警告彈窗 ----------
+                const warningOverlay = document.getElementById('warningOverlay');
+                const warningText = document.getElementById('warningText');
+                const warningFormContainer = document.getElementById('warningFormContainer');
+                const warningIframe = document.getElementById('warningIframe');
+                const warningSubmitBtn = document.getElementById('warningSubmitBtn');
+
+                function showWarningAndForm() {
+                    // 顯示警告時漸出音樂
+                    fadeOutMusic();
+                    warningOverlay.style.display = 'flex';
+                    warningText.style.display = 'block';
+                    warningFormContainer.style.display = 'none';
+                    warningIframe.src = 'https://docs.google.com/forms/d/e/1FAIpQLSd-UvZD_LZ-n5bEvucCycaI85K5jJTHc8_IAz8yvIryIFkD2w/viewform?usp=header';
+                    setTimeout(() => {
+                        warningText.style.display = 'none';
+                        warningFormContainer.style.display = 'flex';
+                    }, 2400);
+                }
+
+                warningSubmitBtn.addEventListener('click', function() {
+                    // 點擊SUBMIT後關閉警告並漸入音樂
+                    warningOverlay.style.display = 'none';
+                    warningIframe.src = 'about:blank';
+                    fadeInMusic();
+                    unlockNext('mengya');
+                });
+
+                // ---------- 攔截所有 target="_blank" 連結 ----------
+                const externalLinks = document.querySelectorAll('a[target="_blank"]');
+                externalLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const taskId = this.dataset.task;
+                        const sub = this.dataset.sub;
+                        if (taskId) {
+                            if (!tasks[taskId]?.unlocked) {
+                                alert('此關卡尚未解鎖，請先完成上一個任務。');
+                                return;
+                            }
+                            currentTask = taskId;
+                            currentSub = sub;
+                        } else {
+                            currentTask = null;
+                            currentSub = null;
+                        }
+                        const url = this.href;
+                        if (url) {
+                            frameContent.src = url;
+                            frameOverlay.style.display = 'flex';
+                            // 打開iframe時漸出音樂
+                            fadeOutMusic();
+                        }
+                    });
+                });
+
+                closeFrameBtn.addEventListener('click', function() {
+                    if (currentTask) {
+                        completeTask(currentTask, currentSub);
+                        currentTask = null;
+                        currentSub = null;
+                    }
+                    frameOverlay.style.display = 'none';
+                    frameContent.src = 'about:blank';
+                    // 關閉iframe時漸入音樂
+                    fadeInMusic();
+                });
+
+                updateUI();
+
+                // ========== 新增：背景音樂與設置功能 ==========
+                const bgMusic = document.getElementById('bgMusic');
+                const settingsBtn = document.getElementById('settingsBtn');
+                const settingsModal = document.getElementById('settingsModal');
+                const settingsClose = document.getElementById('settingsClose');
+                const fullscreenToggle = document.getElementById('fullscreenToggle');
+                const volumeSlider = document.getElementById('volumeSlider');
+                const volumeLabel = document.getElementById('volumeLabel');
+
+                // 設置音樂初始音量
+                bgMusic.volume = 0.5;
+
+                // 音樂自動播放嘗試 (可能會被瀏覽器阻止，我們將在用戶首次點擊任何地方時啟動)
+                let musicStarted = false;
+                function tryPlayMusic() {
+                    if (!musicStarted) {
+                        bgMusic.play().then(() => {
+                            musicStarted = true;
+                        }).catch(e => {
+                            console.log('音樂自動播放被阻止，等待用戶交互');
+                        });
+                    }
+                }
+                // 監聽頁面第一次點擊來播放音樂
+                document.addEventListener('click', function once() {
+                    tryPlayMusic();
+                    document.removeEventListener('click', once);
+                }, { once: true });
+
+                // 打開設置彈窗
+                settingsBtn.addEventListener('click', function() {
+                    settingsModal.style.display = 'flex';
+                });
+
+                // 關閉設置彈窗 (點叉號或點遮罩)
+                settingsClose.addEventListener('click', function() {
+                    settingsModal.style.display = 'none';
+                });
+                settingsModal.addEventListener('click', function(e) {
+                    if (e.target === settingsModal) {
+                        settingsModal.style.display = 'none';
+                    }
+                });
+
+                // 全屏切換
+                fullscreenToggle.addEventListener('click', function() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen();
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        }
+                    }
+                });
+
+                // 音量滑塊
+                volumeSlider.addEventListener('input', function() {
+                    bgMusic.volume = this.value;
+                });
+
+                // 語言切換時更新設置彈窗文字
+                function updateSettingsLanguage(lang) {
+                    const fullscreenBtn = document.getElementById('fullscreenToggle');
+                    const volumeLabel = document.getElementById('volumeLabel');
+                    if (lang === 'bm') {
+                        fullscreenBtn.textContent = fullscreenBtn.dataset.bm;
+                        volumeLabel.textContent = volumeLabel.dataset.bm;
+                    } else {
+                        fullscreenBtn.textContent = fullscreenBtn.dataset.zh;
+                        volumeLabel.textContent = volumeLabel.dataset.zh;
+                    }
+                }
+                // 初始設置語言 (與當前語言一致)
+                updateSettingsLanguage(currentLang);
+
+                // ========== 新增：音樂漸入漸出功能 ==========
+                let fadeInterval = null;
+
+                function fadeOutMusic() {
+                    if (fadeInterval) clearInterval(fadeInterval);
+                    const targetVolume = 0;
+                    const step = 0.05; // 每次變化量
+                    fadeInterval = setInterval(() => {
+                        let current = bgMusic.volume;
+                        if (current <= step) {
+                            bgMusic.volume = 0;
+                            clearInterval(fadeInterval);
+                            fadeInterval = null;
+                        } else {
+                            bgMusic.volume = Math.max(0, current - step);
+                        }
+                    }, 50); // 每50ms調整一次
+                }
+
+                function fadeInMusic() {
+                    if (fadeInterval) clearInterval(fadeInterval);
+                    const targetVolume = parseFloat(volumeSlider.value); // 使用滑塊當前值
+                    const step = 0.05;
+                    fadeInterval = setInterval(() => {
+                        let current = bgMusic.volume;
+                        if (current >= targetVolume - step) {
+                            bgMusic.volume = targetVolume;
+                            clearInterval(fadeInterval);
+                            fadeInterval = null;
+                        } else {
+                            bgMusic.volume = Math.min(targetVolume, current + step);
+                        }
+                    }, 50);
+                }
+
+            }); // DOMContentLoaded
+        })();
+    </script>
+
+    <!-- 
+        圖片檔案名稱：
+        - jata-negara.png (透明背景國徽)
+        - jalur-gemilang.png (透明背景國旗)
+        請將圖片放置於與本HTML相同的資料夾中。
+        背景音樂檔案請命名為 background.mp3 並放在相同資料夾 (或修改 audio src 路徑)。
+        所有原有功能 100% 保留，僅新增設置按鈕、背景音樂、全屏/音量控制，以及音樂漸入漸出。
+    -->
+</body>
+</html>
