@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        /* ========== 原有全部样式（100% 保留，无任何修改）========== */
+        /* ========== 原有全部样式（100% 保留）========== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -391,7 +391,6 @@
             border-radius: 50%;
             cursor: pointer;
         }
-        /* 原有 style.css 完整内容 */
         body, html {
             margin: 0;
             padding: 0;
@@ -523,15 +522,26 @@
             }
         }
         
-        /* ========== 手机竖屏强制旋转提示 ========== */
+        /* ========== 手机竖屏强制旋转提示（修正：仅当遮罩可见时才模糊）========== */
         @media (max-width: 768px) and (orientation: portrait) {
             .orientation-overlay:not(.hidden) {
                 display: flex;
             }
-            body > :not(.orientation-overlay) {
+            /* 仅当遮罩可见时，才模糊其他内容并禁止点击 */
+            .orientation-overlay:not(.hidden) ~ * {
                 filter: blur(2px);
                 pointer-events: none;
             }
+            /* 确保遮罩本身不受影响 */
+            .orientation-overlay:not(.hidden) {
+                filter: none;
+                pointer-events: auto;
+            }
+        }
+        /* 当遮罩隐藏时，移除所有模糊效果（覆盖上面规则） */
+        .orientation-overlay.hidden ~ * {
+            filter: none !important;
+            pointer-events: auto !important;
         }
         
         /* ========== 修复警告弹窗滚动 ========== */
@@ -634,7 +644,6 @@
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSeqr7Bye3gSpOgzPNHESr4oG6vWg2xw_sZB8m25vDHaelJ-ow/viewform?usp=header" class="map-btn item-mengya" target="_blank" rel="noopener" data-task="mengya"><img src="btn-mengya.png" alt="萌芽谷"></a>
         <a href="#" class="map-btn item-fuhua"><img src="btn-fuhua.png" alt="孵化坊"></a>
         <a href="#" class="map-btn item-nimi"><img src="btn-nimi.png" alt="泥密坊"></a>
-        <!-- 最后一个历史建筑：庙会 -->
         <a href="https://hamster-one-eta.vercel.app/" class="map-btn item-miaohui" target="_blank" rel="noopener" data-task="miaohui" id="miaohuiBtn"><img src="btn-miaohui.png" alt="廟會"></a>
     </div>
 
@@ -661,13 +670,11 @@
         (function() {
             'use strict';
             
-            // ========== 全局变量 ==========
-            let skipOrientationCheck = false;  // 是否跳过横屏检测（专为庙会链接）
+            let skipOrientationCheck = false;
+            let isMiaohuiActive = false;
             
-            // ========== 横屏强制检测（增加跳过标志）==========
             const orientationOverlay = document.getElementById('orientationOverlay');
             function checkOrientation() {
-                // 如果当前允许跳过横屏检测，则强制隐藏遮罩
                 if (skipOrientationCheck) {
                     orientationOverlay.classList.add('hidden');
                     return;
@@ -682,7 +689,6 @@
             window.addEventListener('resize', checkOrientation);
             window.addEventListener('orientationchange', checkOrientation);
             
-            // ========== 原有全部脚本（完整保留，仅增加庙会特殊处理）==========
             document.addEventListener('DOMContentLoaded', function() {
                 const frameOverlay = document.getElementById('frameOverlay');
                 const frameContent = document.getElementById('frameContent');
@@ -712,7 +718,6 @@
                 };
                 let currentTask = null;
                 let currentSub = null;
-                let isMiaohuiActive = false;   // 标记当前是否打开庙会链接
 
                 function setLanguage(lang) {
                     if (lang === currentLang) return;
@@ -887,7 +892,6 @@
                     unlockNext('mengya');
                 });
 
-                // ========== 修改链接拦截逻辑：为庙会添加跳过横屏检测 ==========
                 const externalLinks = document.querySelectorAll('a[target="_blank"]');
                 externalLinks.forEach(link => {
                     link.addEventListener('click', function(e) {
@@ -895,29 +899,25 @@
                         const taskId = this.dataset.task;
                         const sub = this.dataset.sub;
                         
-                        // 特殊处理：如果是庙会（taskId === 'miaohui'），设置跳过横屏检测标志
                         if (taskId === 'miaohui') {
                             skipOrientationCheck = true;
                             isMiaohuiActive = true;
-                            // 立即刷新横屏检测，强制隐藏遮罩
                             checkOrientation();
                         } else {
-                            // 其他链接确保标志为 false
                             skipOrientationCheck = false;
                             isMiaohuiActive = false;
                             checkOrientation();
                         }
                         
                         if (taskId) {
-                            if (!tasks[taskId]?.unlocked) { 
+                            if (!tasks[taskId]?.unlocked) {
                                 alert('此關卡尚未解鎖，請先完成上一個任務。');
-                                // 如果未解锁，恢复标志
                                 if (taskId === 'miaohui') {
                                     skipOrientationCheck = false;
                                     isMiaohuiActive = false;
                                     checkOrientation();
                                 }
-                                return; 
+                                return;
                             }
                             currentTask = taskId;
                             currentSub = sub;
@@ -934,7 +934,6 @@
                     });
                 });
                 
-                // 关闭 iframe 时，如果当前是庙会链接，恢复横屏强制
                 closeFrameBtn.addEventListener('click', function() {
                     if (currentTask) {
                         completeTask(currentTask, currentSub);
@@ -945,7 +944,6 @@
                     frameContent.src = 'about:blank';
                     fadeInMusic();
                     
-                    // 恢复横屏检测标志
                     if (isMiaohuiActive) {
                         skipOrientationCheck = false;
                         isMiaohuiActive = false;
@@ -982,7 +980,6 @@
                 function fadeOutMusic() { if (fadeInterval) clearInterval(fadeInterval); const step = 0.05; fadeInterval = setInterval(() => { let cur = bgMusic.volume; if (cur <= step) { bgMusic.volume = 0; clearInterval(fadeInterval); fadeInterval = null; } else { bgMusic.volume = Math.max(0, cur - step); } }, 50); }
                 function fadeInMusic() { if (fadeInterval) clearInterval(fadeInterval); const target = parseFloat(volumeSlider.value); const step = 0.05; fadeInterval = setInterval(() => { let cur = bgMusic.volume; if (cur >= target - step) { bgMusic.volume = target; clearInterval(fadeInterval); fadeInterval = null; } else { bgMusic.volume = Math.min(target, cur + step); } }, 50); }
                 
-                // 警告弹窗滚动修复
                 if (warningFormContainer) {
                     const applyScrollFix = () => {
                         if (window.innerWidth <= 768) {
