@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>我的互動地圖 - 解鎖關卡</title>
-    <link rel="stylesheet" href="style.css"> <!-- 保留外部链接，不影响 -->
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        /* ========== 原有全部样式（完整保留，无任何修改）========== */
+        /* ========== 原有全部样式（100% 保留，无任何修改）========== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -433,7 +433,7 @@
         .item-nimi { width: 20%; top: 52%; left: 44%; }
         .item-miaohui { width: 16%; top: 63%; left: 77%; }
         
-        /* ========== 新增：横屏强制遮罩 ========== */
+        /* ========== 横屏强制遮罩 ========== */
         .orientation-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -534,7 +534,7 @@
             }
         }
         
-        /* ========== 修复警告弹窗在手机上滚动问题 ========== */
+        /* ========== 修复警告弹窗滚动 ========== */
         @media (max-width: 768px) {
             .warning-form-container {
                 max-height: 85vh;
@@ -601,21 +601,17 @@
         </div>
     </div>
 
-    <!-- 背景音乐 -->
     <audio id="bgMusic" loop preload="auto">
         <source src="background.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- 左下角文字 -->
     <div class="sejadin">SEJADIN</div>
 
-    <!-- 语言切换器 -->
     <div class="lang-switcher" id="langSwitcher">
         <div class="lang-option active" data-lang="bm">BM</div>
         <div class="lang-option" data-lang="zh">中文</div>
     </div>
 
-    <!-- 全屏 iframe -->
     <div id="frameOverlay" class="frame-overlay">
         <div class="frame-header">
             <button class="close-frame" id="closeFrameBtn">&times;</button>
@@ -623,7 +619,6 @@
         <iframe id="frameContent" class="frame-content" src="about:blank" allow="camera; microphone" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"></iframe>
     </div>
 
-    <!-- 警告弹窗 -->
     <div id="warningOverlay" class="warning-overlay">
         <div id="warningText" class="warning-text">WARNING!!!</div>
         <div id="warningFormContainer" class="warning-form-container">
@@ -632,7 +627,6 @@
         </div>
     </div>
 
-    <!-- 地图容器 -->
     <div class="map-container" id="mapContainer">
         <img src="bg-map.jpg" alt="地圖背景" class="bg-image">
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSesLtaTpC9OHvnYH8IWr5bWGWmuhfPfqmfObEimjLQD89hpOw/viewform?usp=header" class="map-btn item-zhiyi" target="_blank" rel="noopener" data-task="zhiyi"><img src="btn-zhiyi.png" alt="制衣坊"></a>
@@ -640,10 +634,10 @@
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSeqr7Bye3gSpOgzPNHESr4oG6vWg2xw_sZB8m25vDHaelJ-ow/viewform?usp=header" class="map-btn item-mengya" target="_blank" rel="noopener" data-task="mengya"><img src="btn-mengya.png" alt="萌芽谷"></a>
         <a href="#" class="map-btn item-fuhua"><img src="btn-fuhua.png" alt="孵化坊"></a>
         <a href="#" class="map-btn item-nimi"><img src="btn-nimi.png" alt="泥密坊"></a>
-        <a href="https://hamster-one-eta.vercel.app/" class="map-btn item-miaohui" target="_blank" rel="noopener" data-task="miaohui"><img src="btn-miaohui.png" alt="廟會"></a>
+        <!-- 最后一个历史建筑：庙会 -->
+        <a href="https://hamster-one-eta.vercel.app/" class="map-btn item-miaohui" target="_blank" rel="noopener" data-task="miaohui" id="miaohuiBtn"><img src="btn-miaohui.png" alt="廟會"></a>
     </div>
 
-    <!-- 三个弹窗 -->
     <div id="yinyueModal" class="modal-overlay">
         <div class="modal-rectangle"><div class="modal-squares">
             <a href="https://jatanegaravb.vercel.app/" target="_blank" rel="noopener" class="square left" id="yinyue-left" data-task="yinyue" data-sub="left"><img class="square-img" src="jata-negara.png" alt="Jata Negara emblem"><span class="square-text">Jata Negara</span></a>
@@ -667,9 +661,17 @@
         (function() {
             'use strict';
             
-            // ========== 横屏强制检测 ==========
+            // ========== 全局变量 ==========
+            let skipOrientationCheck = false;  // 是否跳过横屏检测（专为庙会链接）
+            
+            // ========== 横屏强制检测（增加跳过标志）==========
             const orientationOverlay = document.getElementById('orientationOverlay');
             function checkOrientation() {
+                // 如果当前允许跳过横屏检测，则强制隐藏遮罩
+                if (skipOrientationCheck) {
+                    orientationOverlay.classList.add('hidden');
+                    return;
+                }
                 if (window.innerHeight > window.innerWidth) {
                     orientationOverlay.classList.remove('hidden');
                 } else {
@@ -680,7 +682,7 @@
             window.addEventListener('resize', checkOrientation);
             window.addEventListener('orientationchange', checkOrientation);
             
-            // ========== 原有全部脚本（完整保留）==========
+            // ========== 原有全部脚本（完整保留，仅增加庙会特殊处理）==========
             document.addEventListener('DOMContentLoaded', function() {
                 const frameOverlay = document.getElementById('frameOverlay');
                 const frameContent = document.getElementById('frameContent');
@@ -710,6 +712,7 @@
                 };
                 let currentTask = null;
                 let currentSub = null;
+                let isMiaohuiActive = false;   // 标记当前是否打开庙会链接
 
                 function setLanguage(lang) {
                     if (lang === currentLang) return;
@@ -884,27 +887,72 @@
                     unlockNext('mengya');
                 });
 
+                // ========== 修改链接拦截逻辑：为庙会添加跳过横屏检测 ==========
                 const externalLinks = document.querySelectorAll('a[target="_blank"]');
                 externalLinks.forEach(link => {
                     link.addEventListener('click', function(e) {
                         e.preventDefault();
                         const taskId = this.dataset.task;
                         const sub = this.dataset.sub;
+                        
+                        // 特殊处理：如果是庙会（taskId === 'miaohui'），设置跳过横屏检测标志
+                        if (taskId === 'miaohui') {
+                            skipOrientationCheck = true;
+                            isMiaohuiActive = true;
+                            // 立即刷新横屏检测，强制隐藏遮罩
+                            checkOrientation();
+                        } else {
+                            // 其他链接确保标志为 false
+                            skipOrientationCheck = false;
+                            isMiaohuiActive = false;
+                            checkOrientation();
+                        }
+                        
                         if (taskId) {
-                            if (!tasks[taskId]?.unlocked) { alert('此關卡尚未解鎖，請先完成上一個任務。'); return; }
+                            if (!tasks[taskId]?.unlocked) { 
+                                alert('此關卡尚未解鎖，請先完成上一個任務。');
+                                // 如果未解锁，恢复标志
+                                if (taskId === 'miaohui') {
+                                    skipOrientationCheck = false;
+                                    isMiaohuiActive = false;
+                                    checkOrientation();
+                                }
+                                return; 
+                            }
                             currentTask = taskId;
                             currentSub = sub;
-                        } else { currentTask = null; currentSub = null; }
+                        } else {
+                            currentTask = null;
+                            currentSub = null;
+                        }
                         const url = this.href;
-                        if (url) { frameContent.src = url; frameOverlay.style.display = 'flex'; fadeOutMusic(); }
+                        if (url) {
+                            frameContent.src = url;
+                            frameOverlay.style.display = 'flex';
+                            fadeOutMusic();
+                        }
                     });
                 });
+                
+                // 关闭 iframe 时，如果当前是庙会链接，恢复横屏强制
                 closeFrameBtn.addEventListener('click', function() {
-                    if (currentTask) { completeTask(currentTask, currentSub); currentTask = null; currentSub = null; }
+                    if (currentTask) {
+                        completeTask(currentTask, currentSub);
+                        currentTask = null;
+                        currentSub = null;
+                    }
                     frameOverlay.style.display = 'none';
                     frameContent.src = 'about:blank';
                     fadeInMusic();
+                    
+                    // 恢复横屏检测标志
+                    if (isMiaohuiActive) {
+                        skipOrientationCheck = false;
+                        isMiaohuiActive = false;
+                        checkOrientation();
+                    }
                 });
+                
                 updateUI();
 
                 const bgMusic = document.getElementById('bgMusic');
@@ -934,7 +982,7 @@
                 function fadeOutMusic() { if (fadeInterval) clearInterval(fadeInterval); const step = 0.05; fadeInterval = setInterval(() => { let cur = bgMusic.volume; if (cur <= step) { bgMusic.volume = 0; clearInterval(fadeInterval); fadeInterval = null; } else { bgMusic.volume = Math.max(0, cur - step); } }, 50); }
                 function fadeInMusic() { if (fadeInterval) clearInterval(fadeInterval); const target = parseFloat(volumeSlider.value); const step = 0.05; fadeInterval = setInterval(() => { let cur = bgMusic.volume; if (cur >= target - step) { bgMusic.volume = target; clearInterval(fadeInterval); fadeInterval = null; } else { bgMusic.volume = Math.min(target, cur + step); } }, 50); }
                 
-                // ========== 修复警告弹窗滚动（备用 JS 确保） ==========
+                // 警告弹窗滚动修复
                 if (warningFormContainer) {
                     const applyScrollFix = () => {
                         if (window.innerWidth <= 768) {
