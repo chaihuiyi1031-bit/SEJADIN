@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的互動地圖 - 解鎖關卡</title>
-    <link rel="stylesheet" href="style.css"> <!-- 原有樣式表完全未動 -->
+    <link rel="stylesheet" href="style.css"> <!-- 原有樣式表完全未動（保留外部連結，同時內嵌備份） -->
     <!-- 引入 Google Fonts 炫酷字體 -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap" rel="stylesheet">
     <style>
@@ -414,6 +414,112 @@
             border-radius: 50%;
             cursor: pointer;
         }
+        
+        /* ===== 以下是原本 style.css 的全部內容（內嵌備份，不更動任何原始碼） ===== */
+        /* =========================================
+           基本設定
+           ========================================= */
+        body, html {
+            margin: 0;
+            padding: 0;
+            /* 這裡的背景色配合地圖邊緣，如果地圖沒有填滿高度，兩側或上下才不會突兀 */
+            background-color: #FDF6E3; 
+        }
+
+        /* 1. 地圖容器：一切定位的基準點 */
+        .map-container {
+            position: relative; /* 絕對定位的基準 */
+            width: 100%;        /* 讓容器寬度 100% 撐滿螢幕！ */
+            margin: 0 auto;     /* 讓容器置中 */
+            overflow: hidden;   /* 防止突出的發光特效產生多餘的滾動條 */
+        }
+
+        /* 2. 背景圖 */
+        .bg-image {
+            width: 100%;    /* 讓圖片寬度 100% 跟著容器撐滿 */
+            height: auto;   /* 高度自動按比例縮放，保護地圖不變形 */
+            display: block; /* 消除圖片下方的預設空白 */
+        }
+
+        /* =========================================
+           按鈕與特效設定
+           ========================================= */
+
+        /* 3. 所有按鈕的共同設定 (互動與特效) */
+        .map-btn {
+            position: absolute; /* 允許我們自由設定 X, Y 座標 */
+            display: block;
+            cursor: pointer;    /* 滑鼠游標變成手指 */
+            z-index: 10;        /* 確保按鈕蓋在背景圖上方 */
+            /* 特效動畫的平滑時間設定為 0.3 秒 */
+            transition: transform 0.3s ease, filter 0.3s ease; 
+        }
+
+        /* 讓按鈕裡的圖片填滿按鈕框框 */
+        .map-btn img {
+            width: 100%;
+            display: block;
+        }
+
+        /* 🌟 核心特效：滑鼠掃過時發光+放大！ 🌟 */
+        .map-btn:hover {
+            transform: scale(1.1); /* 放大 1.1 倍 */
+            /* 產生白色柔和發光，因為是 PNG，所以會貼合建築物形狀！ */
+            filter: drop-shadow(0px 0px 15px rgba(255, 255, 255, 1)); 
+        }
+
+        /* 按下去的瞬間會縮小一點點，增加打擊感 */
+        .map-btn:active {
+            transform: scale(0.95);
+        }
+
+
+        /* =========================================
+           4. 分別設定 6 個建築物的位置 (Top, Left, Width)
+           ⚠️ 注意：這裡的百分比是粗略估計的，請根據你的螢幕微調！
+           ========================================= */
+
+        /* 左上：制衣坊 */
+        .item-zhiyi {
+            width: 18%;   /* 建築物的大小 */
+            top: 15%;     /* 距離上方多少 */
+            left: 10%;    /* 距離左邊多少 */
+        }
+
+        /* 中上：音乐坊 */
+        .item-yinyue {
+            width: 15%;
+            top: 15%;
+            left: 42%;
+        }
+
+        /* 右上：萌芽谷 */
+        .item-mengya {
+            width: 22%;
+            top: 15%;
+            left: 67%;
+        }
+
+        /* 左下：孵化坊 */
+        .item-fuhua {
+            width: 18%;
+            top: 54%;
+            left: 18%;
+        }
+
+        /* 中下：泥密坊 */
+        .item-nimi {
+            width: 20%;
+            top: 52%;
+            left: 44%;
+        }
+
+        /* 右下：庙会 */
+        .item-miaohui {
+            width: 16%;
+            top: 63%;
+            left: 77%;
+        }
     </style>
 </head>
 <body>
@@ -660,7 +766,8 @@
                     }
                 });
 
-                // ---------- 按鈕下方文字 (保留) ----------
+                // ========== 修正按鈕下方文字標籤的定位問題 ==========
+                // 定義需要添加標籤的按鈕列表（selector 和文字）
                 const buttonLabels = [
                     { selector: '.item-zhiyi', text: 'Ujian Pra' },
                     { selector: '.item-yinyue', text: 'CITRA' },
@@ -669,23 +776,73 @@
                     { selector: '.item-nimi', text: 'SUAR' },
                     { selector: '.item-miaohui', text: 'Edu-HamQuest' }
                 ];
-
-                buttonLabels.forEach(item => {
-                    const btn = document.querySelector(item.selector);
-                    if (!btn) return;
-                    const label = document.createElement('div');
-                    label.className = 'btn-label';
-                    label.textContent = item.text;
-                    const btnRect = btn.getBoundingClientRect();
-                    const containerRect = mapContainer.getBoundingClientRect();
-                    const left = btnRect.left - containerRect.left;
-                    const offsetY = (item.selector === '.item-mengya') ? -4 : -2;
-                    const top = btnRect.top - containerRect.top + btn.offsetHeight + offsetY;
-                    label.style.left = left + 'px';
-                    label.style.top = top + 'px';
-                    label.style.width = btn.offsetWidth + 'px';
-                    mapContainer.appendChild(label);
+                
+                // 儲存已建立的標籤元素，以便後續更新位置
+                const labelElements = [];
+                
+                // 建立標籤（僅執行一次）
+                function createLabels() {
+                    buttonLabels.forEach(item => {
+                        const btn = document.querySelector(item.selector);
+                        if (!btn) return;
+                        // 檢查是否已經有對應的標籤，避免重複建立
+                        let existing = labelElements.find(lbl => lbl.btn === btn);
+                        if (existing) return;
+                        const label = document.createElement('div');
+                        label.className = 'btn-label';
+                        label.textContent = item.text;
+                        mapContainer.appendChild(label);
+                        labelElements.push({ btn, label, offsetY: (item.selector === '.item-mengya') ? -4 : -2 });
+                    });
+                }
+                
+                // 更新所有標籤的位置（在圖片完全載入或視窗改變時呼叫）
+                function updateLabelPositions() {
+                    labelElements.forEach(({ btn, label, offsetY }) => {
+                        const btnRect = btn.getBoundingClientRect();
+                        const containerRect = mapContainer.getBoundingClientRect();
+                        const left = btnRect.left - containerRect.left;
+                        const top = btnRect.top - containerRect.top + btn.offsetHeight + offsetY;
+                        label.style.left = left + 'px';
+                        label.style.top = top + 'px';
+                        label.style.width = btn.offsetWidth + 'px';
+                    });
+                }
+                
+                // 初次建立標籤
+                createLabels();
+                // 初次更新位置（此時圖片可能尚未完全載入）
+                updateLabelPositions();
+                
+                // 當所有資源（包含圖片）都載入完成後，重新計算位置（解決圖片高度不穩定的問題）
+                window.addEventListener('load', function() {
+                    updateLabelPositions();
                 });
+                
+                // 當視窗大小改變時，也重新計算位置（保持響應式）
+                window.addEventListener('resize', function() {
+                    updateLabelPositions();
+                });
+                
+                // 可選：監聽地圖背景圖片的載入完成（更精準）
+                const bgImage = document.querySelector('.bg-image');
+                if (bgImage && bgImage.complete === false) {
+                    bgImage.addEventListener('load', () => updateLabelPositions());
+                }
+                // 監聽所有按鈕圖片的載入（可選）
+                const allBtnImages = document.querySelectorAll('.map-btn img');
+                let pendingImages = 0;
+                allBtnImages.forEach(img => {
+                    if (!img.complete) {
+                        pendingImages++;
+                        img.addEventListener('load', () => {
+                            pendingImages--;
+                            if (pendingImages === 0) updateLabelPositions();
+                        });
+                    }
+                });
+                if (pendingImages === 0) updateLabelPositions(); // 如果全都已載完，再更新一次
+                // -------------------------------------------------------------
 
                 // ---------- 解鎖狀態更新 ----------
                 function updateUI() {
@@ -967,6 +1124,7 @@
         請將圖片放置於與本HTML相同的資料夾中。
         背景音樂檔案請命名為 background.mp3 並放在相同資料夾 (或修改 audio src 路徑)。
         所有原有功能 100% 保留，僅新增設置按鈕、背景音樂、全屏/音量控制，以及音樂漸入漸出。
+        修正：按鈕下方文字標籤現在會在圖片完全載入及視窗尺寸改變時自動重新定位，無需手動刷新。
     -->
 </body>
 </html>
