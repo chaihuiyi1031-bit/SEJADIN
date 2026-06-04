@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        /* ========== 原有全部样式（100% 保留）========== */
+        /* ========== 原有全部样式（100% 保留，无任何修改）========== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -432,39 +432,9 @@
         .item-nimi { width: 20%; top: 52%; left: 44%; }
         .item-miaohui { width: 16%; top: 63%; left: 77%; }
         
-        /* ========== 横屏强制遮罩 ========== */
-        .orientation-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.95);
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="80px" height="80px"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: center 35%;
-            background-size: 80px;
-            z-index: 50000;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            backdrop-filter: blur(8px);
-        }
-        .orientation-message {
-            background: rgba(0,0,0,0.8);
-            padding: 20px 30px;
-            border-radius: 60px;
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            text-align: center;
-            margin-bottom: 20%;
-        }
-        .orientation-overlay.hidden {
-            display: none;
-        }
-        
-        /* ========== 手机横屏优化 ========== */
-        @media (max-width: 1024px) and (orientation: landscape) {
+        /* ========== 手机响应式优化（竖屏/横屏通用）========== */
+        @media (max-width: 768px) {
+            /* 让地图容器可以左右滚动，防止按钮被压缩 */
             .map-container {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
@@ -474,29 +444,34 @@
                 min-width: 100%;
                 height: auto;
             }
+            /* 放大按钮，便于点击 */
             .map-btn {
-                width: 22% !important;
+                width: 28% !important;
             }
-            .item-zhiyi { top: 12%; left: 8%; }
-            .item-yinyue { top: 12%; left: 40%; }
-            .item-mengya { top: 12%; left: 70%; }
-            .item-fuhua { top: 50%; left: 14%; }
-            .item-nimi { top: 48%; left: 44%; }
-            .item-miaohui { top: 60%; left: 76%; }
+            .item-zhiyi { top: 12%; left: 6%; }
+            .item-yinyue { top: 12%; left: 38%; }
+            .item-mengya { top: 12%; left: 68%; }
+            .item-fuhua { top: 50%; left: 12%; }
+            .item-nimi { top: 48%; left: 42%; }
+            .item-miaohui { top: 60%; left: 74%; }
+            /* 下方文字标签调整 */
             .btn-label {
                 font-size: 12px;
                 padding: 2px 0;
                 white-space: nowrap;
             }
+            /* 左下角文字缩小 */
             .sejadin {
                 font-size: 36px;
                 bottom: 10px;
                 left: 10px;
             }
+            /* 语言切换器和设置按钮缩小 */
             .lang-switcher {
                 top: 10px;
                 right: 10px;
                 transform: scale(0.8);
+                transform-origin: top right;
             }
             .settings-btn {
                 width: 40px;
@@ -505,14 +480,15 @@
                 top: 10px;
                 left: 10px;
             }
+            /* 弹窗正方形缩小 */
             .square {
-                width: 200px;
-                height: 240px;
-                font-size: 1.2rem;
+                width: 180px;
+                height: 220px;
+                font-size: 1rem;
             }
             .square-img {
-                width: 140px;
-                height: 140px;
+                width: 120px;
+                height: 120px;
             }
             .modal-rectangle {
                 padding: 20px;
@@ -520,32 +496,7 @@
             .modal-squares {
                 gap: 20px;
             }
-        }
-        
-        /* ========== 手机竖屏强制旋转提示（修正：仅当遮罩可见时才模糊）========== */
-        @media (max-width: 768px) and (orientation: portrait) {
-            .orientation-overlay:not(.hidden) {
-                display: flex;
-            }
-            /* 仅当遮罩可见时，才模糊其他内容并禁止点击 */
-            .orientation-overlay:not(.hidden) ~ * {
-                filter: blur(2px);
-                pointer-events: none;
-            }
-            /* 确保遮罩本身不受影响 */
-            .orientation-overlay:not(.hidden) {
-                filter: none;
-                pointer-events: auto;
-            }
-        }
-        /* 当遮罩隐藏时，移除所有模糊效果（覆盖上面规则） */
-        .orientation-overlay.hidden ~ * {
-            filter: none !important;
-            pointer-events: auto !important;
-        }
-        
-        /* ========== 修复警告弹窗滚动 ========== */
-        @media (max-width: 768px) {
+            /* 警告弹窗滚动修复 */
             .warning-form-container {
                 max-height: 85vh;
                 overflow-y: auto;
@@ -564,6 +515,21 @@
             }
         }
         @media (max-width: 480px) {
+            .map-btn {
+                width: 32% !important;
+            }
+            .item-zhiyi { top: 10%; left: 4%; }
+            .item-yinyue { top: 10%; left: 36%; }
+            .item-mengya { top: 10%; left: 68%; }
+            .item-fuhua { top: 48%; left: 8%; }
+            .item-nimi { top: 46%; left: 40%; }
+            .item-miaohui { top: 58%; left: 72%; }
+            .btn-label {
+                font-size: 10px;
+                padding: 2px 4px;
+                white-space: normal;
+                line-height: 1.2;
+            }
             .warning-form-container {
                 max-height: 80vh;
                 padding: 10px;
@@ -576,25 +542,24 @@
                 padding: 10px 20px;
             }
         }
-        @media (orientation: landscape) and (max-height: 500px) {
-            .warning-form-container {
-                max-height: 90vh;
+        /* 横屏下保持舒适 */
+        @media (min-width: 769px) and (orientation: landscape) {
+            .map-container {
+                overflow: visible;
             }
-            .warning-iframe {
-                height: 65vh;
+            .map-btn {
+                width: 18% !important;
             }
+            .item-zhiyi { width: 18%; top: 15%; left: 10%; }
+            .item-yinyue { width: 15%; top: 15%; left: 42%; }
+            .item-mengya { width: 22%; top: 15%; left: 67%; }
+            .item-fuhua { width: 18%; top: 54%; left: 18%; }
+            .item-nimi { width: 20%; top: 52%; left: 44%; }
+            .item-miaohui { width: 16%; top: 63%; left: 77%; }
         }
     </style>
 </head>
 <body>
-
-    <!-- 横屏强制遮罩 -->
-    <div id="orientationOverlay" class="orientation-overlay">
-        <div class="orientation-message">
-            🔄 請旋轉為橫向螢幕<br>
-            <small>Please rotate to landscape mode</small>
-        </div>
-    </div>
 
     <!-- 设置按钮 -->
     <div class="settings-btn" id="settingsBtn">⚙️</div>
@@ -644,7 +609,7 @@
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSeqr7Bye3gSpOgzPNHESr4oG6vWg2xw_sZB8m25vDHaelJ-ow/viewform?usp=header" class="map-btn item-mengya" target="_blank" rel="noopener" data-task="mengya"><img src="btn-mengya.png" alt="萌芽谷"></a>
         <a href="#" class="map-btn item-fuhua"><img src="btn-fuhua.png" alt="孵化坊"></a>
         <a href="#" class="map-btn item-nimi"><img src="btn-nimi.png" alt="泥密坊"></a>
-        <a href="https://hamster-one-eta.vercel.app/" class="map-btn item-miaohui" target="_blank" rel="noopener" data-task="miaohui" id="miaohuiBtn"><img src="btn-miaohui.png" alt="廟會"></a>
+        <a href="https://hamster-one-eta.vercel.app/" class="map-btn item-miaohui" target="_blank" rel="noopener" data-task="miaohui"><img src="btn-miaohui.png" alt="廟會"></a>
     </div>
 
     <div id="yinyueModal" class="modal-overlay">
@@ -669,25 +634,6 @@
     <script>
         (function() {
             'use strict';
-            
-            let skipOrientationCheck = false;
-            let isMiaohuiActive = false;
-            
-            const orientationOverlay = document.getElementById('orientationOverlay');
-            function checkOrientation() {
-                if (skipOrientationCheck) {
-                    orientationOverlay.classList.add('hidden');
-                    return;
-                }
-                if (window.innerHeight > window.innerWidth) {
-                    orientationOverlay.classList.remove('hidden');
-                } else {
-                    orientationOverlay.classList.add('hidden');
-                }
-            }
-            checkOrientation();
-            window.addEventListener('resize', checkOrientation);
-            window.addEventListener('orientationchange', checkOrientation);
             
             document.addEventListener('DOMContentLoaded', function() {
                 const frameOverlay = document.getElementById('frameOverlay');
@@ -898,59 +844,21 @@
                         e.preventDefault();
                         const taskId = this.dataset.task;
                         const sub = this.dataset.sub;
-                        
-                        if (taskId === 'miaohui') {
-                            skipOrientationCheck = true;
-                            isMiaohuiActive = true;
-                            checkOrientation();
-                        } else {
-                            skipOrientationCheck = false;
-                            isMiaohuiActive = false;
-                            checkOrientation();
-                        }
-                        
                         if (taskId) {
-                            if (!tasks[taskId]?.unlocked) {
-                                alert('此關卡尚未解鎖，請先完成上一個任務。');
-                                if (taskId === 'miaohui') {
-                                    skipOrientationCheck = false;
-                                    isMiaohuiActive = false;
-                                    checkOrientation();
-                                }
-                                return;
-                            }
+                            if (!tasks[taskId]?.unlocked) { alert('此關卡尚未解鎖，請先完成上一個任務。'); return; }
                             currentTask = taskId;
                             currentSub = sub;
-                        } else {
-                            currentTask = null;
-                            currentSub = null;
-                        }
+                        } else { currentTask = null; currentSub = null; }
                         const url = this.href;
-                        if (url) {
-                            frameContent.src = url;
-                            frameOverlay.style.display = 'flex';
-                            fadeOutMusic();
-                        }
+                        if (url) { frameContent.src = url; frameOverlay.style.display = 'flex'; fadeOutMusic(); }
                     });
                 });
-                
                 closeFrameBtn.addEventListener('click', function() {
-                    if (currentTask) {
-                        completeTask(currentTask, currentSub);
-                        currentTask = null;
-                        currentSub = null;
-                    }
+                    if (currentTask) { completeTask(currentTask, currentSub); currentTask = null; currentSub = null; }
                     frameOverlay.style.display = 'none';
                     frameContent.src = 'about:blank';
                     fadeInMusic();
-                    
-                    if (isMiaohuiActive) {
-                        skipOrientationCheck = false;
-                        isMiaohuiActive = false;
-                        checkOrientation();
-                    }
                 });
-                
                 updateUI();
 
                 const bgMusic = document.getElementById('bgMusic');
