@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>我的互動地圖 - 解鎖關卡</title>
-    <link rel="stylesheet" href="style.css"> <!-- 原有外部樣式（保留，不影響） -->
+    <link rel="stylesheet" href="style.css"> <!-- 保留外部链接，不影响 -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        /* ----- 原有所有樣式（完整保留）----- */
+        /* ========== 原有全部样式（完整保留，无任何修改）========== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -433,8 +433,7 @@
         .item-nimi { width: 20%; top: 52%; left: 44%; }
         .item-miaohui { width: 16%; top: 63%; left: 77%; }
         
-        /* ===== 新增：手機響應式與橫屏強制 ===== */
-        /* 橫屏強制遮罩（豎屏時顯示） */
+        /* ========== 新增：横屏强制遮罩 ========== */
         .orientation-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -449,7 +448,6 @@
             align-items: flex-end;
             justify-content: center;
             backdrop-filter: blur(8px);
-            transition: opacity 0.3s;
         }
         .orientation-message {
             background: rgba(0,0,0,0.8);
@@ -466,9 +464,8 @@
             display: none;
         }
         
-        /* 手機橫屏與平板專用優化（當寬度 ≤ 1024px 時啟用） */
+        /* ========== 手机横屏优化 ========== */
         @media (max-width: 1024px) and (orientation: landscape) {
-            /* 地圖容器可橫向滾動（若內容超出） */
             .map-container {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
@@ -478,7 +475,6 @@
                 min-width: 100%;
                 height: auto;
             }
-            /* 按鈕稍微放大，便於點擊 */
             .map-btn {
                 width: 22% !important;
             }
@@ -488,7 +484,6 @@
             .item-fuhua { top: 50%; left: 14%; }
             .item-nimi { top: 48%; left: 44%; }
             .item-miaohui { top: 60%; left: 76%; }
-            
             .btn-label {
                 font-size: 12px;
                 padding: 2px 0;
@@ -528,22 +523,62 @@
             }
         }
         
-        /* 手機豎屏時強制顯示旋轉提示（遮罩已存在，此為額外確保） */
+        /* ========== 手机竖屏强制旋转提示 ========== */
         @media (max-width: 768px) and (orientation: portrait) {
             .orientation-overlay:not(.hidden) {
                 display: flex;
             }
-            /* 確保地圖內容在遮罩下不可見 */
             body > :not(.orientation-overlay) {
                 filter: blur(2px);
                 pointer-events: none;
+            }
+        }
+        
+        /* ========== 修复警告弹窗在手机上滚动问题 ========== */
+        @media (max-width: 768px) {
+            .warning-form-container {
+                max-height: 85vh;
+                overflow-y: auto;
+                padding: 15px;
+                width: 90%;
+            }
+            .warning-iframe {
+                height: 60vh;
+                min-height: 300px;
+            }
+            .submit-btn {
+                margin-top: 15px;
+                margin-bottom: 10px;
+                font-size: 20px;
+                padding: 12px 30px;
+            }
+        }
+        @media (max-width: 480px) {
+            .warning-form-container {
+                max-height: 80vh;
+                padding: 10px;
+            }
+            .warning-iframe {
+                height: 55vh;
+            }
+            .submit-btn {
+                font-size: 18px;
+                padding: 10px 20px;
+            }
+        }
+        @media (orientation: landscape) and (max-height: 500px) {
+            .warning-form-container {
+                max-height: 90vh;
+            }
+            .warning-iframe {
+                height: 65vh;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- 橫屏強制遮罩 -->
+    <!-- 横屏强制遮罩 -->
     <div id="orientationOverlay" class="orientation-overlay">
         <div class="orientation-message">
             🔄 請旋轉為橫向螢幕<br>
@@ -551,7 +586,7 @@
         </div>
     </div>
 
-    <!-- 設置按鈕與彈窗 -->
+    <!-- 设置按钮 -->
     <div class="settings-btn" id="settingsBtn">⚙️</div>
     <div id="settingsModal" class="settings-modal">
         <div class="settings-square">
@@ -566,17 +601,21 @@
         </div>
     </div>
 
+    <!-- 背景音乐 -->
     <audio id="bgMusic" loop preload="auto">
         <source src="background.mp3" type="audio/mpeg">
     </audio>
 
+    <!-- 左下角文字 -->
     <div class="sejadin">SEJADIN</div>
 
+    <!-- 语言切换器 -->
     <div class="lang-switcher" id="langSwitcher">
         <div class="lang-option active" data-lang="bm">BM</div>
         <div class="lang-option" data-lang="zh">中文</div>
     </div>
 
+    <!-- 全屏 iframe -->
     <div id="frameOverlay" class="frame-overlay">
         <div class="frame-header">
             <button class="close-frame" id="closeFrameBtn">&times;</button>
@@ -584,6 +623,7 @@
         <iframe id="frameContent" class="frame-content" src="about:blank" allow="camera; microphone" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"></iframe>
     </div>
 
+    <!-- 警告弹窗 -->
     <div id="warningOverlay" class="warning-overlay">
         <div id="warningText" class="warning-text">WARNING!!!</div>
         <div id="warningFormContainer" class="warning-form-container">
@@ -592,6 +632,7 @@
         </div>
     </div>
 
+    <!-- 地图容器 -->
     <div class="map-container" id="mapContainer">
         <img src="bg-map.jpg" alt="地圖背景" class="bg-image">
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSesLtaTpC9OHvnYH8IWr5bWGWmuhfPfqmfObEimjLQD89hpOw/viewform?usp=header" class="map-btn item-zhiyi" target="_blank" rel="noopener" data-task="zhiyi"><img src="btn-zhiyi.png" alt="制衣坊"></a>
@@ -602,7 +643,7 @@
         <a href="https://hamster-one-eta.vercel.app/" class="map-btn item-miaohui" target="_blank" rel="noopener" data-task="miaohui"><img src="btn-miaohui.png" alt="廟會"></a>
     </div>
 
-    <!-- 三個彈窗 -->
+    <!-- 三个弹窗 -->
     <div id="yinyueModal" class="modal-overlay">
         <div class="modal-rectangle"><div class="modal-squares">
             <a href="https://jatanegaravb.vercel.app/" target="_blank" rel="noopener" class="square left" id="yinyue-left" data-task="yinyue" data-sub="left"><img class="square-img" src="jata-negara.png" alt="Jata Negara emblem"><span class="square-text">Jata Negara</span></a>
@@ -626,7 +667,7 @@
         (function() {
             'use strict';
             
-            // ========== 橫屏強制檢測 ==========
+            // ========== 横屏强制检测 ==========
             const orientationOverlay = document.getElementById('orientationOverlay');
             function checkOrientation() {
                 if (window.innerHeight > window.innerWidth) {
@@ -639,7 +680,7 @@
             window.addEventListener('resize', checkOrientation);
             window.addEventListener('orientationchange', checkOrientation);
             
-            // ========== 以下為所有原有腳本（完全保留）==========
+            // ========== 原有全部脚本（完整保留）==========
             document.addEventListener('DOMContentLoaded', function() {
                 const frameOverlay = document.getElementById('frameOverlay');
                 const frameContent = document.getElementById('frameContent');
@@ -875,7 +916,7 @@
                 const volumeLabelElem = document.getElementById('volumeLabel');
                 bgMusic.volume = 0.5;
                 let musicStarted = false;
-                function tryPlayMusic() { if (!musicStarted) { bgMusic.play().then(() => { musicStarted = true; }).catch(e => console.log('自動播放受阻')); } }
+                function tryPlayMusic() { if (!musicStarted) { bgMusic.play().then(() => { musicStarted = true; }).catch(e => console.log('自动播放受阻')); } }
                 document.addEventListener('click', function once() { tryPlayMusic(); document.removeEventListener('click', once); }, { once: true });
                 settingsBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; });
                 settingsClose.addEventListener('click', () => { settingsModal.style.display = 'none'; });
@@ -892,6 +933,20 @@
                 let fadeInterval = null;
                 function fadeOutMusic() { if (fadeInterval) clearInterval(fadeInterval); const step = 0.05; fadeInterval = setInterval(() => { let cur = bgMusic.volume; if (cur <= step) { bgMusic.volume = 0; clearInterval(fadeInterval); fadeInterval = null; } else { bgMusic.volume = Math.max(0, cur - step); } }, 50); }
                 function fadeInMusic() { if (fadeInterval) clearInterval(fadeInterval); const target = parseFloat(volumeSlider.value); const step = 0.05; fadeInterval = setInterval(() => { let cur = bgMusic.volume; if (cur >= target - step) { bgMusic.volume = target; clearInterval(fadeInterval); fadeInterval = null; } else { bgMusic.volume = Math.min(target, cur + step); } }, 50); }
+                
+                // ========== 修复警告弹窗滚动（备用 JS 确保） ==========
+                if (warningFormContainer) {
+                    const applyScrollFix = () => {
+                        if (window.innerWidth <= 768) {
+                            warningFormContainer.style.maxHeight = '85vh';
+                            warningFormContainer.style.overflowY = 'auto';
+                            const iframe = warningFormContainer.querySelector('.warning-iframe');
+                            if (iframe) iframe.style.height = '60vh';
+                        }
+                    };
+                    applyScrollFix();
+                    window.addEventListener('resize', applyScrollFix);
+                }
             });
         })();
     </script>
