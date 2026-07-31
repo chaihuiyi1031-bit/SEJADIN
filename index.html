@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>我的互動地圖 - 解鎖關卡</title>
+    <title>SEJADIN</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap" rel="stylesheet">
     <style>
@@ -139,6 +139,7 @@
             z-index: 10;
             box-sizing: border-box;
         }
+        /* ========== 修改：全屏框架（去掉顶部栏，按钮悬浮） ========== */
         .frame-overlay {
             position: fixed;
             top: 0;
@@ -150,31 +151,52 @@
             display: none;
             flex-direction: column;
         }
-        .frame-header {
-            display: flex;
-            justify-content: flex-end;
-            padding: 10px 20px;
-            background-color: #f0f0f0;
-            border-bottom: 1px solid #ccc;
-        }
-        .close-frame {
-            background: none;
-            border: none;
-            font-size: 36px;
-            cursor: pointer;
-            color: #333;
-            padding: 0 15px;
-            line-height: 1;
-            font-weight: bold;
-        }
-        .close-frame:hover {
-            color: #000;
-        }
+        /* 让 iframe 占满整个框架 */
         .frame-content {
             flex: 1;
             width: 100%;
+            height: 100%;
             border: none;
+            display: block;
         }
+        /* 悬浮关闭按钮 —— 酷炫版 */
+        .close-frame {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff416c, #ff4b2b);
+            color: white;
+            font-size: 40px;
+            font-weight: 900;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 99999;
+            box-shadow: 0 0 20px rgba(255, 75, 43, 0.8), 0 0 40px rgba(255, 65, 108, 0.4);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+        .close-frame:hover {
+            transform: scale(1.2) rotate(90deg);
+            box-shadow: 0 0 30px rgba(255, 75, 43, 1), 0 0 60px rgba(255, 65, 108, 0.7);
+            background: radial-gradient(circle at 30% 30%, #ff6a88, #ff4b2b);
+        }
+        .close-frame:active {
+            transform: scale(0.9) rotate(0deg);
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px rgba(255, 75, 43, 0.6); }
+            50% { box-shadow: 0 0 35px rgba(255, 75, 43, 1), 0 0 60px rgba(255, 65, 108, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(255, 75, 43, 0.6); }
+        }
+        /* ========== 以上为修改部分 ========== */
+
         .map-btn.locked {
             opacity: 0.4;
             pointer-events: none;
@@ -527,18 +549,15 @@
             .orientation-overlay:not(.hidden) {
                 display: flex;
             }
-            /* 仅当遮罩可见时，才模糊其他内容并禁止点击 */
             .orientation-overlay:not(.hidden) ~ * {
                 filter: blur(2px);
                 pointer-events: none;
             }
-            /* 确保遮罩本身不受影响 */
             .orientation-overlay:not(.hidden) {
                 filter: none;
                 pointer-events: auto;
             }
         }
-        /* 当遮罩隐藏时，移除所有模糊效果（覆盖上面规则） */
         .orientation-overlay.hidden ~ * {
             filter: none !important;
             pointer-events: auto !important;
@@ -622,12 +641,12 @@
         <div class="lang-option" data-lang="zh">中文</div>
     </div>
 
+    <!-- ========== 修改：移除顶部栏，将关闭按钮直接放在 frame-overlay 内 ========== -->
     <div id="frameOverlay" class="frame-overlay">
-        <div class="frame-header">
-            <button class="close-frame" id="closeFrameBtn">&times;</button>
-        </div>
+        <button class="close-frame" id="closeFrameBtn">&times;</button>
         <iframe id="frameContent" class="frame-content" src="about:blank" allow="camera; microphone" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"></iframe>
     </div>
+    <!-- ========== 修改结束 ========== -->
 
     <div id="warningOverlay" class="warning-overlay">
         <div id="warningText" class="warning-text">WARNING!!!</div>
