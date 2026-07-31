@@ -669,7 +669,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #0a0612; /* 深色背景，可被封面图覆盖 */
+            background: #0a0612;
             pointer-events: auto;
         }
         .cover-layer .cover-bg {
@@ -682,7 +682,7 @@
         .cover-layer .start-btn {
             position: relative;
             cursor: pointer;
-            width: 200px; /* 根据实际图片调整 */
+            width: 200px;
             height: auto;
             z-index: 1;
             transition: transform 0.2s ease, filter 0.2s ease;
@@ -766,36 +766,41 @@
             display: none;
         }
 
-        /* 回放按钮（位于右上角，语言切换按钮左侧） */
+        /* ========== 修改回放按钮为圆形 + 特效 ========== */
         .replay-btn {
             position: fixed;
             top: 20px;
-            right: 110px; /* 语言切换按钮宽度约 100px，留出间距 */
+            right: 110px;
             z-index: 10001;
-            background: rgba(255, 255, 255, 0.9);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             border: none;
-            border-radius: 40px;
-            padding: 6px 16px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #333;
-            cursor: pointer;
+            background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: background 0.2s, transform 0.1s;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #333;
+            transition: transform 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6),
+                        background 0.3s ease,
+                        box-shadow 0.3s ease;
             font-family: 'Arial', sans-serif;
+            user-select: none;
+            padding: 0;
         }
         .replay-btn:hover {
+            transform: scale(1.15) rotate(10deg);
             background: #ffffff;
-            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.35);
         }
         .replay-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.9);
+            transition: transform 0.1s ease;
         }
         .replay-btn span {
-            font-size: 1.8rem;
             line-height: 1;
         }
 
@@ -804,21 +809,24 @@
             .replay-btn {
                 top: 10px;
                 right: 80px;
-                transform: scale(0.8);
-                padding: 4px 12px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
             }
             .replay-btn:hover {
-                transform: scale(0.85);
+                transform: scale(1.1) rotate(10deg);
             }
         }
         @media (max-width: 768px) and (orientation: portrait) {
             .replay-btn {
                 top: 10px;
                 right: 80px;
-                transform: scale(0.7);
-                padding: 4px 10px;
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
             }
         }
+        /* ========== 回放按钮修改结束 ========== */
     </style>
 </head>
 <body>
@@ -852,9 +860,9 @@
 
     <div class="sejadin">SEJADIN</div>
 
-    <!-- ========== 新增回放按钮（位于语言切换左侧） ========== -->
+    <!-- ========== 新增回放按钮（圆形） ========== -->
     <button class="replay-btn" id="replayBtn">
-        <span>▶</span> 回放
+        <span>▶</span>
     </button>
 
     <div class="lang-switcher" id="langSwitcher">
@@ -912,7 +920,7 @@
     <!-- ========== 新增：封面、语言选择、视频层、迷雾Canvas ========== -->
     <!-- 封面层 -->
     <div id="coverLayer" class="cover-layer">
-        <img src="cover-bg.png" alt="Cover Background" class="cover-bg"> <!-- 背景图 -->
+        <img src="cover-bg.png" alt="Cover Background" class="cover-bg">
         <img src="start-btn.png" alt="Start" class="start-btn" id="startBtn">
     </div>
 
@@ -1328,10 +1336,11 @@
                         const dist = Math.hypot(dx, dy);
                         if (dist < disperseRadius + 200) {
                             const angle = Math.atan2(dy, dx);
-                            const force = (1 - dist / (disperseRadius + 250)) * 32;
+                            // ===== 修改：减慢消散速度（减小 force 系数） =====
+                            const force = (1 - dist / (disperseRadius + 250)) * 20; // 原为 32，改为 20
                             this.x += Math.cos(angle) * force;
                             this.y += Math.sin(angle) * force;
-                            this.alpha *= 0.92;
+                            this.alpha *= 0.94; // 原为 0.92，减慢淡出
                         }
                     }
                 }
@@ -1365,7 +1374,8 @@
                 if (!fogActive) return;
                 ctx.clearRect(0, 0, width, height);
                 if (isDispersing) {
-                    disperseRadius += 25;
+                    // ===== 修改：减小扩散速度 =====
+                    disperseRadius += 12; // 原为 25
                 }
                 particles.forEach(p => {
                     p.update();
@@ -1385,7 +1395,7 @@
                 fogCallback = callback || null;
                 renderFog();
 
-                // 约 2.5 秒后完成
+                // ===== 修改：延长完成时间至 4 秒 =====
                 setTimeout(() => {
                     isDispersing = false;
                     fogActive = false;
@@ -1394,7 +1404,7 @@
                         fogCallback();
                         fogCallback = null;
                     }
-                }, 2600);
+                }, 4000);
             }
 
             // ---------- 视频播放 ----------
@@ -1418,22 +1428,23 @@
                 isVideoPlaying = false;
                 videoLayer.style.display = 'none';
 
+                // ===== 修改：先隐藏封面和语言选择（让地图露出），再触发迷雾 =====
+                coverLayer.style.display = 'none';
+                langSelection.style.display = 'none';
+
                 // 触发迷雾（屏幕中心）
                 const cx = window.innerWidth / 2;
                 const cy = window.innerHeight / 2;
                 triggerFogDissolve(cx, cy, function() {
                     // 迷雾完成后的回调
                     if (isFirstTime) {
-                        // 开场：隐藏封面层，显示地图，启动 BGM
-                        coverLayer.style.display = 'none';
-                        langSelection.style.display = 'none';
-                        // 启动背景音乐
+                        // 首次：启动 BGM（封面已隐藏）
                         const vol = parseFloat(volumeSlider.value);
                         bgMusic.volume = vol;
                         bgMusic.play().catch(e => console.warn('BGM play error:', e));
                         isFirstTime = false;
                     } else {
-                        // 回放：只关闭视频，地图已可见，恢复 BGM
+                        // 回放：恢复 BGM
                         const vol = parseFloat(volumeSlider.value);
                         bgMusic.volume = vol;
                         bgMusic.play().catch(e => console.warn('BGM play error:', e));
@@ -1458,30 +1469,23 @@
                     const lang = this.dataset.lang;
                     const isIntro = langSelection.dataset.isIntro === 'true';
                     langSelection.style.display = 'none';
-                    // 如果是开场，视频结束后会隐藏封面；如果是回放，封面早已隐藏
-                    isFirstTime = isIntro; // 更新标志
+                    isFirstTime = isIntro;
                     playVideo(lang, isIntro);
                 });
             });
 
             // ---------- Start 按钮 ----------
             startBtn.addEventListener('click', function() {
-                // 显示语言选择（开场模式）
                 showLanguageSelection(true);
             });
 
             // ---------- 回放按钮 ----------
             replayBtn.addEventListener('click', function() {
-                // 如果视频正在播放，不重复触发
                 if (isVideoPlaying) return;
-                // 显示语言选择（回放模式，不显示 Start）
                 showLanguageSelection(false);
             });
 
-            // ---------- 确保视频层关闭时停止播放（可选） ----------
-            // 点击视频层背景不关闭，只有视频结束才关闭
-
-            console.log('新增功能已加载：封面、语言、视频、迷雾、回放按钮');
+            console.log('新增功能已加载：封面、语言、视频、迷雾（慢速）、回放按钮（圆形特效）');
         })();
     </script>
 
