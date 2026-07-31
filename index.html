@@ -655,6 +655,170 @@
                 height: 65vh;
             }
         }
+
+        /* ========== 新增样式（独立，不触碰原有） ========== */
+        /* 封面层 */
+        .cover-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 15000; /* 高于地图，低于警告 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0a0612; /* 深色背景，可被封面图覆盖 */
+            pointer-events: auto;
+        }
+        .cover-layer .cover-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .cover-layer .start-btn {
+            position: relative;
+            cursor: pointer;
+            width: 200px; /* 根据实际图片调整 */
+            height: auto;
+            z-index: 1;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            user-select: none;
+        }
+        .cover-layer .start-btn:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+        }
+        .cover-layer .start-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 语言选择 */
+        .lang-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 16000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+        .lang-selection .lang-options {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .lang-selection .lang-btn {
+            cursor: pointer;
+            width: 180px;
+            height: auto;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        .lang-selection .lang-btn:hover {
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+        }
+        .lang-selection .lang-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 视频播放层 */
+        .video-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 17000;
+            display: none;
+            background: #000;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-layer video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background: #000;
+        }
+
+        /* 迷雾 Canvas */
+        #fog-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 18000;
+            pointer-events: none;
+            display: none;
+        }
+
+        /* 回放按钮（位于右上角，语言切换按钮左侧） */
+        .replay-btn {
+            position: fixed;
+            top: 20px;
+            right: 110px; /* 语言切换按钮宽度约 100px，留出间距 */
+            z-index: 10001;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Arial', sans-serif;
+        }
+        .replay-btn:hover {
+            background: #ffffff;
+            transform: scale(1.05);
+        }
+        .replay-btn:active {
+            transform: scale(0.95);
+        }
+        .replay-btn span {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        /* 手机横屏适配回放按钮 */
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .replay-btn {
+                top: 10px;
+                right: 80px;
+                transform: scale(0.8);
+                padding: 4px 12px;
+            }
+            .replay-btn:hover {
+                transform: scale(0.85);
+            }
+        }
+        @media (max-width: 768px) and (orientation: portrait) {
+            .replay-btn {
+                top: 10px;
+                right: 80px;
+                transform: scale(0.7);
+                padding: 4px 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -687,6 +851,11 @@
     </audio>
 
     <div class="sejadin">SEJADIN</div>
+
+    <!-- ========== 新增回放按钮（位于语言切换左侧） ========== -->
+    <button class="replay-btn" id="replayBtn">
+        <span>▶</span> 回放
+    </button>
 
     <div class="lang-switcher" id="langSwitcher">
         <div class="lang-option active" data-lang="bm">BM</div>
@@ -740,6 +909,30 @@
         </div></div>
     </div>
 
+    <!-- ========== 新增：封面、语言选择、视频层、迷雾Canvas ========== -->
+    <!-- 封面层 -->
+    <div id="coverLayer" class="cover-layer">
+        <img src="cover-bg.png" alt="Cover Background" class="cover-bg"> <!-- 背景图 -->
+        <img src="start-btn.png" alt="Start" class="start-btn" id="startBtn">
+    </div>
+
+    <!-- 语言选择 -->
+    <div id="langSelection" class="lang-selection">
+        <div class="lang-options">
+            <img src="lang-zh.png" alt="中文" class="lang-btn" data-lang="zh">
+            <img src="lang-bm.png" alt="Bahasa Melayu" class="lang-btn" data-lang="bm">
+        </div>
+    </div>
+
+    <!-- 视频播放层 -->
+    <div id="videoLayer" class="video-layer">
+        <video id="introVideo" preload="auto" playsinline></video>
+    </div>
+
+    <!-- 迷雾 Canvas -->
+    <canvas id="fog-canvas"></canvas>
+
+    <!-- ========== 原锁定 JavaScript（完全不变） ========== -->
     <script>
         (function() {
             'use strict';
@@ -1069,5 +1262,228 @@
             });
         })();
     </script>
+
+    <!-- ========== 新增 JavaScript（独立，不触碰原有） ========== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- 获取元素 ----------
+            const coverLayer = document.getElementById('coverLayer');
+            const startBtn = document.getElementById('startBtn');
+            const langSelection = document.getElementById('langSelection');
+            const langBtns = langSelection.querySelectorAll('.lang-btn');
+            const videoLayer = document.getElementById('videoLayer');
+            const introVideo = document.getElementById('introVideo');
+            const fogCanvas = document.getElementById('fog-canvas');
+            const replayBtn = document.getElementById('replayBtn');
+            const bgMusic = document.getElementById('bgMusic');
+            const volumeSlider = document.getElementById('volumeSlider');
+
+            // ---------- 状态变量 ----------
+            let isFirstTime = true;          // 是否首次播放（开场）
+            let isVideoPlaying = false;
+
+            // ---------- 迷雾粒子系统（从演示提取） ----------
+            const ctx = fogCanvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            let isDispersing = false;
+            let disperseOrigin = { x: 0, y: 0 };
+            let disperseRadius = 0;
+            let fogActive = false;
+            let fogCallback = null;
+
+            function resizeCanvas() {
+                width = fogCanvas.width = window.innerWidth;
+                height = fogCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            class FogParticle {
+                constructor() {
+                    this.init();
+                }
+                init() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.size = Math.random() * 160 + 120;
+                    this.baseAlpha = Math.random() * 0.2 + 0.08;
+                    this.alpha = this.baseAlpha;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                }
+                update() {
+                    if (!isDispersing) {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        if (this.x < -this.size) this.x = width + this.size;
+                        if (this.x > width + this.size) this.x = -this.size;
+                        if (this.y < -this.size) this.y = height + this.size;
+                        if (this.y > height + this.size) this.y = -this.size;
+                    } else {
+                        const dx = this.x - disperseOrigin.x;
+                        const dy = this.y - disperseOrigin.y;
+                        const dist = Math.hypot(dx, dy);
+                        if (dist < disperseRadius + 200) {
+                            const angle = Math.atan2(dy, dx);
+                            const force = (1 - dist / (disperseRadius + 250)) * 32;
+                            this.x += Math.cos(angle) * force;
+                            this.y += Math.sin(angle) * force;
+                            this.alpha *= 0.92;
+                        }
+                    }
+                }
+                draw() {
+                    if (this.alpha <= 0.001) return;
+                    ctx.save();
+                    ctx.beginPath();
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size
+                    );
+                    grad.addColorStop(0, `rgba(220, 225, 240, ${this.alpha})`);
+                    grad.addColorStop(0.7, `rgba(180, 190, 220, ${this.alpha * 0.3})`);
+                    grad.addColorStop(1, `rgba(180, 190, 220, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            function createFog() {
+                particles = [];
+                for (let i = 0; i < 90; i++) {
+                    particles.push(new FogParticle());
+                }
+            }
+            createFog();
+
+            function renderFog() {
+                if (!fogActive) return;
+                ctx.clearRect(0, 0, width, height);
+                if (isDispersing) {
+                    disperseRadius += 25;
+                }
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(renderFog);
+            }
+
+            // 触发迷雾吹散
+            function triggerFogDissolve(originX, originY, callback) {
+                fogActive = true;
+                fogCanvas.style.display = 'block';
+                disperseOrigin.x = originX;
+                disperseOrigin.y = originY;
+                disperseRadius = 0;
+                isDispersing = true;
+                fogCallback = callback || null;
+                renderFog();
+
+                // 约 2.5 秒后完成
+                setTimeout(() => {
+                    isDispersing = false;
+                    fogActive = false;
+                    fogCanvas.style.display = 'none';
+                    if (fogCallback) {
+                        fogCallback();
+                        fogCallback = null;
+                    }
+                }, 2600);
+            }
+
+            // ---------- 视频播放 ----------
+            function playVideo(lang, isIntro) {
+                if (isVideoPlaying) return;
+                const videoSrc = lang === 'zh' ? 'intro-zh.mp4' : 'intro-bm.mp4';
+                introVideo.src = videoSrc;
+                videoLayer.style.display = 'flex';
+                isVideoPlaying = true;
+
+                // 暂停背景音乐（如果正在播放）
+                if (!bgMusic.paused) {
+                    bgMusic.pause();
+                }
+
+                introVideo.play().catch(e => console.warn('Video play error:', e));
+            }
+
+            // ---------- 视频结束处理 ----------
+            introVideo.addEventListener('ended', function() {
+                isVideoPlaying = false;
+                videoLayer.style.display = 'none';
+
+                // 触发迷雾（屏幕中心）
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                triggerFogDissolve(cx, cy, function() {
+                    // 迷雾完成后的回调
+                    if (isFirstTime) {
+                        // 开场：隐藏封面层，显示地图，启动 BGM
+                        coverLayer.style.display = 'none';
+                        langSelection.style.display = 'none';
+                        // 启动背景音乐
+                        const vol = parseFloat(volumeSlider.value);
+                        bgMusic.volume = vol;
+                        bgMusic.play().catch(e => console.warn('BGM play error:', e));
+                        isFirstTime = false;
+                    } else {
+                        // 回放：只关闭视频，地图已可见，恢复 BGM
+                        const vol = parseFloat(volumeSlider.value);
+                        bgMusic.volume = vol;
+                        bgMusic.play().catch(e => console.warn('BGM play error:', e));
+                    }
+                });
+            });
+
+            // ---------- 显示语言选择（供 Start 和 回放按钮调用） ----------
+            function showLanguageSelection(isIntro) {
+                // 隐藏封面中的 Start（如果可见）
+                if (isIntro) {
+                    startBtn.style.display = 'none';
+                }
+                langSelection.style.display = 'flex';
+                // 存储当前模式
+                langSelection.dataset.isIntro = isIntro ? 'true' : 'false';
+            }
+
+            // ---------- 语言选择点击 ----------
+            langBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lang = this.dataset.lang;
+                    const isIntro = langSelection.dataset.isIntro === 'true';
+                    langSelection.style.display = 'none';
+                    // 如果是开场，视频结束后会隐藏封面；如果是回放，封面早已隐藏
+                    isFirstTime = isIntro; // 更新标志
+                    playVideo(lang, isIntro);
+                });
+            });
+
+            // ---------- Start 按钮 ----------
+            startBtn.addEventListener('click', function() {
+                // 显示语言选择（开场模式）
+                showLanguageSelection(true);
+            });
+
+            // ---------- 回放按钮 ----------
+            replayBtn.addEventListener('click', function() {
+                // 如果视频正在播放，不重复触发
+                if (isVideoPlaying) return;
+                // 显示语言选择（回放模式，不显示 Start）
+                showLanguageSelection(false);
+            });
+
+            // ---------- 确保视频层关闭时停止播放（可选） ----------
+            // 点击视频层背景不关闭，只有视频结束才关闭
+
+            console.log('新增功能已加载：封面、语言、视频、迷雾、回放按钮');
+        })();
+    </script>
+
 </body>
 </html>
