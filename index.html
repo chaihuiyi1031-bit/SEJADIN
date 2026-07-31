@@ -160,41 +160,93 @@
             display: block;
         }
         /* 悬浮关闭按钮 —— 酷炫版 */
-        .close-frame {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            border: none;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ff416c, #ff4b2b);
-            color: white;
-            font-size: 40px;
-            font-weight: 900;
-            line-height: 1;
-            cursor: pointer;
-            z-index: 99999;
-            box-shadow: 0 0 20px rgba(255, 75, 43, 0.8), 0 0 40px rgba(255, 65, 108, 0.4);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse 2s infinite;
-        }
-        .close-frame:hover {
-            transform: scale(1.2) rotate(90deg);
-            box-shadow: 0 0 30px rgba(255, 75, 43, 1), 0 0 60px rgba(255, 65, 108, 0.7);
-            background: radial-gradient(circle at 30% 30%, #ff6a88, #ff4b2b);
-        }
-        .close-frame:active {
-            transform: scale(0.9) rotate(0deg);
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 20px rgba(255, 75, 43, 0.6); }
-            50% { box-shadow: 0 0 35px rgba(255, 75, 43, 1), 0 0 60px rgba(255, 65, 108, 0.5); }
-            100% { box-shadow: 0 0 20px rgba(255, 75, 43, 0.6); }
-        }
+        .frame-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    z-index: 20000;
+    display: none;
+    flex-direction: column;
+}
+.frame-content {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+/* 果冻 X 按钮 —— 替换原有关闭按钮 */
+.close-frame {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff512f, #dd2476);
+    box-shadow: 0 8px 20px rgba(221, 36, 118, 0.35);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    z-index: 99999;
+    transition: transform 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6),
+                background 0.4s ease,
+                box-shadow 0.4s ease;
+}
+
+.close-frame::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: inherit;
+    filter: blur(10px);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.close-frame .line {
+    position: absolute;
+    width: 26px;
+    height: 4px;
+    background-color: #ffffff;
+    border-radius: 4px;
+    transition: transform 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6),
+                width 0.3s ease;
+}
+
+.close-frame .line-1 { transform: rotate(45deg); }
+.close-frame .line-2 { transform: rotate(-45deg); }
+
+/* Hover 悬浮 */
+.close-frame:hover {
+    transform: scale(1.2) rotate(180deg);
+    background: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+    box-shadow: 0 12px 28px rgba(233, 64, 87, 0.5);
+}
+
+.close-frame:hover::before {
+    opacity: 0.7;
+    transform: scale(1.3);
+}
+
+.close-frame:hover .line {
+    width: 30px;
+}
+
+/* Active 点击 */
+.close-frame:active {
+    transform: scale(0.9) rotate(180deg);
+    transition: transform 0.1s ease;
+}
         /* ========== 以上为修改部分 ========== */
 
         .map-btn.locked {
@@ -643,7 +695,10 @@
 
     <!-- ========== 修改：移除顶部栏，将关闭按钮直接放在 frame-overlay 内 ========== -->
     <div id="frameOverlay" class="frame-overlay">
-        <button class="close-frame" id="closeFrameBtn">&times;</button>
+        <button class="close-frame" id="closeFrameBtn">
+    <span class="line line-1"></span>
+    <span class="line line-2"></span>
+</button>
         <iframe id="frameContent" class="frame-content" src="about:blank" allow="camera; microphone" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"></iframe>
     </div>
     <!-- ========== 修改结束 ========== -->
