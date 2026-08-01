@@ -1339,10 +1339,10 @@
                         if (dist < disperseRadius + 200) {
                             const angle = Math.atan2(dy, dx);
                             // ===== 修改：减慢消散速度（减小 force 系数） =====
-                            const force = (1 - dist / (disperseRadius + 250)) * 20; // 原为 32，改为 20
+                            const force = (1 - dist / (disperseRadius + 250)) * 10; // 原为 32，改为 20
                             this.x += Math.cos(angle) * force;
                             this.y += Math.sin(angle) * force;
-                            this.alpha *= 0.94; // 原为 0.92，减慢淡出
+                            this.alpha *= 0.98; // 原为 0.92，减慢淡出
                         }
                     }
                 }
@@ -1377,7 +1377,7 @@
                 ctx.clearRect(0, 0, width, height);
                 if (isDispersing) {
                     // ===== 修改：减小扩散速度 =====
-                    disperseRadius += 12; // 原为 25
+                    disperseRadius += 8; // 原为 25
                 }
                 particles.forEach(p => {
                     p.update();
@@ -1406,7 +1406,7 @@
                         fogCallback();
                         fogCallback = null;
                     }
-                }, 4000);
+                }, 6000);
             }
 
             // ---------- 视频播放 ----------
