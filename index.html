@@ -828,13 +828,23 @@
                 font-size: 1rem;
             }
         }
-        /* ========== 新增：手机竖屏下 Start 按钮位置适配 ========== */
+       /* ========== 手机竖屏适配（宽度 ≤ 768px） ========== */
 @media (max-width: 768px) and (orientation: portrait) {
+    
+    /* ---------- Start 按钮 ---------- */
     .cover-layer .start-btn {
-        width: 120px;          /* 手机屏幕缩小按钮尺寸，可根据需要调整 */
-        margin-top: 20vh;      /* 垂直位置：用 vh 单位，相对于屏幕高度 */
-        margin-left: 0;        /* 水平居中（移除之前的左右偏移） */
-        /* 如果您之前用了 margin-left，这里重置为 0 可居中 */
+        width: 120px;           /* 缩小按钮 */
+        margin-top: 25vh;       /* 垂直位置：屏幕高度的 25%，中间偏下 */
+        margin-left: 0;         /* 水平居中（移除之前的左右偏移） */
+    }
+
+    /* ---------- 语言选择（两个图片按钮） ---------- */
+    .lang-selection .lang-btn {
+        width: 120px;           /* 缩小语言按钮 */
+        height: auto;
+    }
+    .lang-selection .lang-options {
+        gap: 20px;              /* 缩小间距，避免小屏溢出 */
     }
 }
     </style>
