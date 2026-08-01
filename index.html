@@ -810,7 +810,7 @@
         @media (max-width: 1024px) and (orientation: landscape) {
             .replay-btn {
                 top: 10px;
-                right: 80px;
+                right: 40px;
                 width: 40px;
                 height: 40px;
                 font-size: 1.2rem;
@@ -828,6 +828,30 @@
                 font-size: 1rem;
             }
         }
+        
+        /* Skip 文字链接样式 */
+#skipLink {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.3s ease;
+    z-index: 20;
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 1px;
+    user-select: none;
+}
+#skipLink:hover {
+    color: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+}
+#skipLink:active {
+    transform: scale(0.95);
+
        /* ========== 手机竖屏适配（宽度 ≤ 768px） ========== */
 @media (max-width: 768px) and (orientation: portrait) {
     
@@ -955,8 +979,9 @@
     <!-- 视频播放层 -->
     <div id="videoLayer" class="video-layer">
         <video id="introVideo" preload="auto" playsinline></video>
+        <a id="skipLink">Skip></a>
     </div>
-
+    
     <!-- 迷雾 Canvas -->
     <canvas id="fog-canvas"></canvas>
 
@@ -1443,33 +1468,41 @@
                 introVideo.play().catch(e => console.warn('Video play error:', e));
             }
 
-            // ---------- 视频结束处理 ----------
-            introVideo.addEventListener('ended', function() {
+                        // ---------- 视频结束处理 ----------
+            // 提取视频结束逻辑
+            function handleVideoEnd() {
                 isVideoPlaying = false;
                 videoLayer.style.display = 'none';
 
-                // ===== 修改：先隐藏封面和语言选择（让地图露出），再触发迷雾 =====
                 coverLayer.style.display = 'none';
                 langSelection.style.display = 'none';
 
-                // 触发迷雾（屏幕中心）
                 const cx = window.innerWidth / 2;
                 const cy = window.innerHeight / 2;
                 triggerFogDissolve(cx, cy, function() {
-                    // 迷雾完成后的回调
                     if (isFirstTime) {
-                        // 首次：启动 BGM（封面已隐藏）
                         const vol = parseFloat(volumeSlider.value);
                         bgMusic.volume = vol;
                         bgMusic.play().catch(e => console.warn('BGM play error:', e));
                         isFirstTime = false;
                     } else {
-                        // 回放：恢复 BGM
                         const vol = parseFloat(volumeSlider.value);
                         bgMusic.volume = vol;
                         bgMusic.play().catch(e => console.warn('BGM play error:', e));
                     }
                 });
+            }
+
+            // 视频自然结束
+            introVideo.addEventListener('ended', handleVideoEnd);
+
+            // Skip 点击
+            const skipLink = document.getElementById('skipLink');
+            skipLink.addEventListener('click', function() {
+                if (isVideoPlaying) {
+                    introVideo.pause();
+                    handleVideoEnd();
+                }
             });
 
             // ---------- 显示语言选择（供 Start 和 回放按钮调用） ----------
