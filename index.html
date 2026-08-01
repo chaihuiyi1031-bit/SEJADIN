@@ -1318,8 +1318,8 @@
                 init() {
                     this.x = Math.random() * width;
                     this.y = Math.random() * height;
-                    this.size = Math.random() * 160 + 120;
-                    this.baseAlpha = Math.random() * 0.2 + 0.08;
+                    this.size = Math.random() * 220 + 180;
+                    this.baseAlpha = Math.random() * 0.35 + 0.15;
                     this.alpha = this.baseAlpha;
                     this.vx = (Math.random() - 0.5) * 0.5;
                     this.vy = (Math.random() - 0.5) * 0.3;
@@ -1355,7 +1355,7 @@
                         this.x, this.y, this.size
                     );
                     grad.addColorStop(0, `rgba(220, 225, 240, ${this.alpha})`);
-                    grad.addColorStop(0.7, `rgba(180, 190, 220, ${this.alpha * 0.3})`);
+                    grad.addColorStop(0.7, `rgba(180, 190, 220, ${this.alpha * 0.6})`);
                     grad.addColorStop(1, `rgba(180, 190, 220, 0)`);
                     ctx.fillStyle = grad;
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -1366,7 +1366,7 @@
 
             function createFog() {
                 particles = [];
-                for (let i = 0; i < 90; i++) {
+                for (let i = 0; i < 200; i++) {
                     particles.push(new FogParticle());
                 }
             }
