@@ -828,7 +828,15 @@
                 font-size: 1rem;
             }
         }
-        /* ========== 回放按钮修改结束 ========== */
+        /* ========== 新增：手机竖屏下 Start 按钮位置适配 ========== */
+@media (max-width: 768px) and (orientation: portrait) {
+    .cover-layer .start-btn {
+        width: 120px;          /* 手机屏幕缩小按钮尺寸，可根据需要调整 */
+        margin-top: 20vh;      /* 垂直位置：用 vh 单位，相对于屏幕高度 */
+        margin-left: 0;        /* 水平居中（移除之前的左右偏移） */
+        /* 如果您之前用了 margin-left，这里重置为 0 可居中 */
+    }
+}
     </style>
 </head>
 <body>
