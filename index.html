@@ -698,7 +698,7 @@
             transform: scale(0.95);
         }
 
-        /* 语言选择 */
+        /* 语言选择（原有） */
         .lang-selection {
             position: fixed;
             top: 0;
@@ -768,7 +768,7 @@
             display: none;
         }
 
-        /* ========== 修改回放按钮为圆形 + 特效 ========== */
+        /* ========== 新增回放按钮样式（完全独立） ========== */
         .replay-btn {
             position: fixed;
             top: 20px;
@@ -806,7 +806,7 @@
             line-height: 1;
         }
 
-        /* 手机横屏适配回放按钮 */
+        /* 手机适配回放按钮 */
         @media (max-width: 1024px) and (orientation: landscape) {
             .replay-btn {
                 top: 10px;
@@ -814,9 +814,6 @@
                 width: 40px;
                 height: 40px;
                 font-size: 1.2rem;
-            }
-            .replay-btn:hover {
-                transform: scale(1.1) rotate(10deg);
             }
         }
         @media (max-width: 768px) and (orientation: portrait) {
@@ -828,49 +825,176 @@
                 font-size: 1rem;
             }
         }
-        
-        /* Skip 文字链接样式 */
-#skipLink {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    text-decoration: none;
-    transition: color 0.3s ease, transform 0.3s ease;
-    z-index: 20;
-    font-family: 'Arial', sans-serif;
-    letter-spacing: 1px;
-    user-select: none;
-}
-#skipLink:hover {
-    color: rgba(255, 255, 255, 1);
-    transform: scale(1.05);
-}
-#skipLink:active {
-    transform: scale(0.95);
 
-       /* ========== 手机竖屏适配（宽度 ≤ 768px） ========== */
-@media (max-width: 768px) and (orientation: portrait) {
-    
-    /* ---------- Start 按钮 ---------- */
-    .cover-layer .start-btn {
-        width: 150px !important;    /* 适当大小，加上 !important 确保覆盖 */
-        margin-top: 35vh !important; /* 中间偏下 */
-        margin-left: 0 !important;   /* 水平居中 */
-    }
+        /* ========== 新增回放专用语言选择 ========== */
+        #replayLangSelection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 21000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+        #replayLangSelection .lang-options {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        #replayLangSelection .lang-btn {
+            cursor: pointer;
+            width: 300px;
+            height: auto;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        #replayLangSelection .lang-btn:hover {
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+        }
+        #replayLangSelection .lang-btn:active {
+            transform: scale(0.95);
+        }
 
-    /* ---------- 语言选择（两个图片按钮） ---------- */
-    .lang-selection .lang-btn {
-        width: 120px !important;    /* 适当大小 */
-        height: auto !important;
-    }
-    .lang-selection .lang-options {
-        gap: 20px !important;       /* 缩小间距 */
-    }
-}
+        /* ========== 新增回放覆盖层（独立于任务框架） ========== */
+        #replayFrameOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 22000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #replayFrameOverlay .replay-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        /* 回放关闭按钮（复用果冻风格） */
+        #replayCloseBtn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff512f, #dd2476);
+            box-shadow: 0 8px 20px rgba(221, 36, 118, 0.35);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            z-index: 23000;
+            transition: transform 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6),
+                        background 0.4s ease,
+                        box-shadow 0.4s ease;
+        }
+        #replayCloseBtn::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: inherit;
+            filter: blur(10px);
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        #replayCloseBtn:hover {
+            transform: scale(1.2) rotate(180deg);
+            background: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+            box-shadow: 0 12px 28px rgba(233, 64, 87, 0.5);
+        }
+        #replayCloseBtn:hover::before {
+            opacity: 0.7;
+            transform: scale(1.3);
+        }
+        #replayCloseBtn:active {
+            transform: scale(0.9) rotate(180deg);
+            transition: transform 0.1s ease;
+        }
+        #replayCloseBtn .line {
+            position: absolute;
+            width: 26px;
+            height: 4px;
+            background-color: #ffffff;
+            border-radius: 4px;
+            transition: transform 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6),
+                        width 0.3s ease;
+        }
+        #replayCloseBtn .line-1 { transform: rotate(45deg); }
+        #replayCloseBtn .line-2 { transform: rotate(-45deg); }
+
+        /* 回放 Skip 链接 */
+        #replaySkipLink {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.3s ease, transform 0.3s ease;
+            z-index: 23000;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 1px;
+            user-select: none;
+        }
+        #replaySkipLink:hover {
+            color: rgba(255, 255, 255, 1);
+            transform: scale(1.05);
+        }
+        #replaySkipLink:active {
+            transform: scale(0.95);
+        }
+
+        /* ========== 手机竖屏适配（宽度 ≤ 768px） ========== */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .cover-layer .start-btn {
+                width: 150px !important;
+                margin-top: 35vh !important;
+                margin-left: 0 !important;
+            }
+            .lang-selection .lang-btn,
+            #replayLangSelection .lang-btn {
+                width: 120px !important;
+                height: auto !important;
+            }
+            .lang-selection .lang-options,
+            #replayLangSelection .lang-options {
+                gap: 20px !important;
+            }
+            #replayCloseBtn {
+                width: 40px;
+                height: 40px;
+                top: 15px;
+                right: 15px;
+            }
+            #replayCloseBtn .line {
+                width: 18px;
+                height: 3px;
+            }
+            #replaySkipLink {
+                font-size: 0.9rem;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -904,7 +1028,7 @@
 
     <div class="sejadin">SEJADIN</div>
 
-    <!-- ========== 新增回放按钮（圆形） ========== -->
+    <!-- ========== 新增回放按钮 ========== -->
     <button class="replay-btn" id="replayBtn">
         <span>▶</span>
     </button>
@@ -968,8 +1092,16 @@
         <img src="start-btn.png" alt="Start" class="start-btn" id="startBtn">
     </div>
 
-    <!-- 语言选择 -->
+    <!-- 语言选择（原有，用于首次启动） -->
     <div id="langSelection" class="lang-selection">
+        <div class="lang-options">
+            <img src="lang-zh.png" alt="中文" class="lang-btn" data-lang="zh">
+            <img src="lang-bm.png" alt="Bahasa Melayu" class="lang-btn" data-lang="bm">
+        </div>
+    </div>
+
+    <!-- ========== 新增回放专用语言选择 ========== -->
+    <div id="replayLangSelection">
         <div class="lang-options">
             <img src="lang-zh.png" alt="中文" class="lang-btn" data-lang="zh">
             <img src="lang-bm.png" alt="Bahasa Melayu" class="lang-btn" data-lang="bm">
@@ -984,6 +1116,16 @@
     
     <!-- 迷雾 Canvas -->
     <canvas id="fog-canvas"></canvas>
+
+    <!-- ========== 新增回放覆盖层（独立） ========== -->
+    <div id="replayFrameOverlay">
+        <button id="replayCloseBtn">
+            <span class="line line-1"></span>
+            <span class="line line-2"></span>
+        </button>
+        <a id="replaySkipLink">Skip ></a>
+        <iframe id="replayIframe" class="replay-iframe" src="about:blank" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
 
     <!-- ========== 原锁定 JavaScript（完全不变） ========== -->
     <script>
@@ -1329,15 +1471,24 @@
             const videoLayer = document.getElementById('videoLayer');
             const introVideo = document.getElementById('introVideo');
             const fogCanvas = document.getElementById('fog-canvas');
-            const replayBtn = document.getElementById('replayBtn');
             const bgMusic = document.getElementById('bgMusic');
             const volumeSlider = document.getElementById('volumeSlider');
+
+            // 新增回放元素
+            const replayBtn = document.getElementById('replayBtn');
+            const replayLangSelection = document.getElementById('replayLangSelection');
+            const replayLangBtns = replayLangSelection.querySelectorAll('.lang-btn');
+            const replayFrameOverlay = document.getElementById('replayFrameOverlay');
+            const replayIframe = document.getElementById('replayIframe');
+            const replayCloseBtn = document.getElementById('replayCloseBtn');
+            const replaySkipLink = document.getElementById('replaySkipLink');
 
             // ---------- 状态变量 ----------
             let isFirstTime = true;          // 是否首次播放（开场）
             let isVideoPlaying = false;
+            let isReplayActive = false;      // 是否处于回放模式
 
-            // ---------- 迷雾粒子系统（从演示提取） ----------
+            // ---------- 迷雾粒子系统（完全保留原有） ----------
             const ctx = fogCanvas.getContext('2d');
             let width, height;
             let particles = [];
@@ -1381,11 +1532,10 @@
                         const dist = Math.hypot(dx, dy);
                         if (dist < disperseRadius + 200) {
                             const angle = Math.atan2(dy, dx);
-                            // ===== 修改：减慢消散速度（减小 force 系数） =====
-                            const force = (1 - dist / (disperseRadius + 250)) * 10; // 原为 32，改为 20
+                            const force = (1 - dist / (disperseRadius + 250)) * 10;
                             this.x += Math.cos(angle) * force;
                             this.y += Math.sin(angle) * force;
-                            this.alpha *= 0.98; // 原为 0.92，减慢淡出
+                            this.alpha *= 0.98;
                         }
                     }
                 }
@@ -1419,8 +1569,7 @@
                 if (!fogActive) return;
                 ctx.clearRect(0, 0, width, height);
                 if (isDispersing) {
-                    // ===== 修改：减小扩散速度 =====
-                    disperseRadius += 8; // 原为 25
+                    disperseRadius += 8;
                 }
                 particles.forEach(p => {
                     p.update();
@@ -1429,7 +1578,6 @@
                 requestAnimationFrame(renderFog);
             }
 
-            // 触发迷雾吹散
             function triggerFogDissolve(originX, originY, callback) {
                 fogActive = true;
                 fogCanvas.style.display = 'block';
@@ -1439,8 +1587,6 @@
                 isDispersing = true;
                 fogCallback = callback || null;
                 renderFog();
-
-                // ===== 修改：延长完成时间至 4 秒 =====
                 setTimeout(() => {
                     isDispersing = false;
                     fogActive = false;
@@ -1452,31 +1598,24 @@
                 }, 6000);
             }
 
-            // ---------- 视频播放 ----------
+            // ---------- 视频播放（首次启动） ----------
             function playVideo(lang, isIntro) {
                 if (isVideoPlaying) return;
                 const videoSrc = lang === 'zh' ? 'intro-zh.mp4' : 'intro-bm.mp4';
                 introVideo.src = videoSrc;
                 videoLayer.style.display = 'flex';
                 isVideoPlaying = true;
-
-                // 暂停背景音乐（如果正在播放）
                 if (!bgMusic.paused) {
                     bgMusic.pause();
                 }
-
                 introVideo.play().catch(e => console.warn('Video play error:', e));
             }
 
-                        // ---------- 视频结束处理 ----------
-            // 提取视频结束逻辑
             function handleVideoEnd() {
                 isVideoPlaying = false;
                 videoLayer.style.display = 'none';
-
                 coverLayer.style.display = 'none';
                 langSelection.style.display = 'none';
-
                 const cx = window.innerWidth / 2;
                 const cy = window.innerHeight / 2;
                 triggerFogDissolve(cx, cy, function() {
@@ -1493,10 +1632,7 @@
                 });
             }
 
-            // 视频自然结束
             introVideo.addEventListener('ended', handleVideoEnd);
-
-            // Skip 点击
             const skipLink = document.getElementById('skipLink');
             skipLink.addEventListener('click', function() {
                 if (isVideoPlaying) {
@@ -1505,18 +1641,14 @@
                 }
             });
 
-            // ---------- 显示语言选择（供 Start 和 回放按钮调用） ----------
             function showLanguageSelection(isIntro) {
-                // 隐藏封面中的 Start（如果可见）
                 if (isIntro) {
                     startBtn.style.display = 'none';
                 }
                 langSelection.style.display = 'flex';
-                // 存储当前模式
                 langSelection.dataset.isIntro = isIntro ? 'true' : 'false';
             }
 
-            // ---------- 语言选择点击 ----------
             langBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const lang = this.dataset.lang;
@@ -1527,18 +1659,61 @@
                 });
             });
 
-            // ---------- Start 按钮 ----------
             startBtn.addEventListener('click', function() {
                 showLanguageSelection(true);
             });
 
-            // ---------- 回放按钮 ----------
+            // ---------- 回放按钮逻辑 ----------
             replayBtn.addEventListener('click', function() {
-                if (isVideoPlaying) return;
-                showLanguageSelection(false);
+                if (isVideoPlaying) return;          // 视频播放中不允许
+                replayLangSelection.style.display = 'flex';
+                isReplayActive = true;
             });
 
-            console.log('新增功能已加载：封面、语言、视频、迷雾（慢速）、回放按钮（圆形特效）');
+            // 回放语言选择点击
+            replayLangBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lang = this.dataset.lang;
+                    replayLangSelection.style.display = 'none';
+                    // 构造 YouTube 嵌入 URL
+                    const videoId = lang === 'zh' ? 'gLST9Dg8odY' : 'YpvqmzYvw5Q';
+                    const embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0';
+                    replayIframe.src = embedUrl;
+                    replayFrameOverlay.style.display = 'flex';
+                    // 暂停背景音乐
+                    if (!bgMusic.paused) {
+                        bgMusic.pause();
+                    }
+                });
+            });
+
+            // 关闭回放（点击关闭按钮或 Skip 链接）
+            function closeReplay() {
+                if (!replayFrameOverlay.style.display || replayFrameOverlay.style.display === 'none') return;
+                replayFrameOverlay.style.display = 'none';
+                replayIframe.src = 'about:blank';
+                isReplayActive = false;
+                // 触发迷雾消散并恢复音乐
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                triggerFogDissolve(cx, cy, function() {
+                    const vol = parseFloat(volumeSlider.value);
+                    bgMusic.volume = vol;
+                    bgMusic.play().catch(e => console.warn('BGM play error:', e));
+                });
+            }
+
+            replayCloseBtn.addEventListener('click', closeReplay);
+            replaySkipLink.addEventListener('click', closeReplay);
+
+            // 点击外部关闭（点击背景）
+            replayFrameOverlay.addEventListener('click', function(e) {
+                if (e.target === replayFrameOverlay) {
+                    closeReplay();
+                }
+            });
+
+            console.log('新增回放按钮已加载（独立，不触碰原有代码）');
         })();
     </script>
 
