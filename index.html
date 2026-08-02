@@ -735,7 +735,7 @@
             transform: scale(0.95);
         }
 
-        /* 视频播放层 */
+        /* 视频播放层（intro） */
         .video-layer {
             position: fixed;
             top: 0;
@@ -768,7 +768,7 @@
             display: none;
         }
 
-        /* ========== 新增回放按钮样式（完全独立） ========== */
+        /* ========== 回放按钮样式 ========== */
         .replay-btn {
             position: fixed;
             top: 20px;
@@ -805,8 +805,6 @@
         .replay-btn span {
             line-height: 1;
         }
-
-        /* 手机适配回放按钮 */
         @media (max-width: 1024px) and (orientation: landscape) {
             .replay-btn {
                 top: 10px;
@@ -826,7 +824,7 @@
             }
         }
 
-        /* ========== 新增回放专用语言选择 ========== */
+        /* ========== 回放专用语言选择 ========== */
         #replayLangSelection {
             position: fixed;
             top: 0;
@@ -863,7 +861,7 @@
             transform: scale(0.95);
         }
 
-        /* ========== 新增回放覆盖层（独立于任务框架） ========== */
+        /* ========== 回放覆盖层（仅关闭按钮，无 Skip） ========== */
         #replayFrameOverlay {
             position: fixed;
             top: 0;
@@ -882,7 +880,7 @@
             height: 100%;
             border: none;
         }
-        /* 回放关闭按钮（复用果冻风格） */
+        /* 回放关闭按钮（果冻风格） */
         #replayCloseBtn {
             position: absolute;
             top: 25px;
@@ -939,8 +937,8 @@
         #replayCloseBtn .line-1 { transform: rotate(45deg); }
         #replayCloseBtn .line-2 { transform: rotate(-45deg); }
 
-        /* 回放 Skip 链接 */
-        #replaySkipLink {
+        /* ========== Skip 链接（仅用于 intro 视频，在右下角） ========== */
+        #skipLink {
             position: absolute;
             bottom: 30px;
             right: 30px;
@@ -950,20 +948,20 @@
             cursor: pointer;
             text-decoration: none;
             transition: color 0.3s ease, transform 0.3s ease;
-            z-index: 23000;
+            z-index: 20;
             font-family: 'Arial', sans-serif;
             letter-spacing: 1px;
             user-select: none;
         }
-        #replaySkipLink:hover {
+        #skipLink:hover {
             color: rgba(255, 255, 255, 1);
             transform: scale(1.05);
         }
-        #replaySkipLink:active {
+        #skipLink:active {
             transform: scale(0.95);
         }
 
-        /* ========== 手机竖屏适配（宽度 ≤ 768px） ========== */
+        /* ========== 手机竖屏适配 ========== */
         @media (max-width: 768px) and (orientation: portrait) {
             .cover-layer .start-btn {
                 width: 150px !important;
@@ -988,11 +986,6 @@
             #replayCloseBtn .line {
                 width: 18px;
                 height: 3px;
-            }
-            #replaySkipLink {
-                font-size: 0.9rem;
-                bottom: 20px;
-                right: 20px;
             }
         }
     </style>
@@ -1028,7 +1021,7 @@
 
     <div class="sejadin">SEJADIN</div>
 
-    <!-- ========== 新增回放按钮 ========== -->
+    <!-- 回放按钮 -->
     <button class="replay-btn" id="replayBtn">
         <span>▶</span>
     </button>
@@ -1038,16 +1031,16 @@
         <div class="lang-option" data-lang="zh">中文</div>
     </div>
 
-    <!-- ========== 修改：移除顶部栏，将关闭按钮直接放在 frame-overlay 内 ========== -->
+    <!-- 任务框架 -->
     <div id="frameOverlay" class="frame-overlay">
         <button class="close-frame" id="closeFrameBtn">
-    <span class="line line-1"></span>
-    <span class="line line-2"></span>
-</button>
+            <span class="line line-1"></span>
+            <span class="line line-2"></span>
+        </button>
         <iframe id="frameContent" class="frame-content" src="about:blank" allow="camera; microphone" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"></iframe>
     </div>
-    <!-- ========== 修改结束 ========== -->
 
+    <!-- 警告弹窗 -->
     <div id="warningOverlay" class="warning-overlay">
         <div id="warningText" class="warning-text">WARNING!!!</div>
         <div id="warningFormContainer" class="warning-form-container">
@@ -1056,6 +1049,7 @@
         </div>
     </div>
 
+    <!-- 地图 -->
     <div class="map-container" id="mapContainer">
         <img src="bg-map.jpg" alt="地圖背景" class="bg-image">
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSesLtaTpC9OHvnYH8IWr5bWGWmuhfPfqmfObEimjLQD89hpOw/viewform?usp=header" class="map-btn item-zhiyi" target="_blank" rel="noopener" data-task="zhiyi"><img src="btn-zhiyi.png" alt="制衣坊"></a>
@@ -1066,6 +1060,7 @@
         <a href="https://hamster-one-eta.vercel.app/" class="map-btn item-miaohui" target="_blank" rel="noopener" data-task="miaohui" id="miaohuiBtn"><img src="btn-miaohui.png" alt="廟會"></a>
     </div>
 
+    <!-- 模态框 -->
     <div id="yinyueModal" class="modal-overlay">
         <div class="modal-rectangle"><div class="modal-squares">
             <a href="https://jatanegaravb.vercel.app/" target="_blank" rel="noopener" class="square left" id="yinyue-left" data-task="yinyue" data-sub="left"><img class="square-img" src="jata-negara.png" alt="Jata Negara emblem"><span class="square-text">Jata Negara</span></a>
@@ -1085,14 +1080,13 @@
         </div></div>
     </div>
 
-    <!-- ========== 新增：封面、语言选择、视频层、迷雾Canvas ========== -->
     <!-- 封面层 -->
     <div id="coverLayer" class="cover-layer">
         <img src="cover-bg.png" alt="Cover Background" class="cover-bg">
         <img src="start-btn.png" alt="Start" class="start-btn" id="startBtn">
     </div>
 
-    <!-- 语言选择（原有，用于首次启动） -->
+    <!-- 首次启动语言选择 -->
     <div id="langSelection" class="lang-selection">
         <div class="lang-options">
             <img src="lang-zh.png" alt="中文" class="lang-btn" data-lang="zh">
@@ -1100,7 +1094,7 @@
         </div>
     </div>
 
-    <!-- ========== 新增回放专用语言选择 ========== -->
+    <!-- 回放专用语言选择 -->
     <div id="replayLangSelection">
         <div class="lang-options">
             <img src="lang-zh.png" alt="中文" class="lang-btn" data-lang="zh">
@@ -1108,26 +1102,25 @@
         </div>
     </div>
 
-    <!-- 视频播放层 -->
+    <!-- 视频播放层（intro） -->
     <div id="videoLayer" class="video-layer">
         <video id="introVideo" preload="auto" playsinline></video>
-        <a id="skipLink">Skip></a>
+        <a id="skipLink">Skip ></a>
     </div>
-    
+
     <!-- 迷雾 Canvas -->
     <canvas id="fog-canvas"></canvas>
 
-    <!-- ========== 新增回放覆盖层（独立） ========== -->
+    <!-- 回放覆盖层（只有关闭按钮，没有 Skip） -->
     <div id="replayFrameOverlay">
         <button id="replayCloseBtn">
             <span class="line line-1"></span>
             <span class="line line-2"></span>
         </button>
-        <a id="replaySkipLink">Skip ></a>
         <iframe id="replayIframe" class="replay-iframe" src="about:blank" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 
-    <!-- ========== 原锁定 JavaScript（完全不变） ========== -->
+    <!-- ========== 原有 JavaScript（100% 不变） ========== -->
     <script>
         (function() {
             'use strict';
@@ -1458,7 +1451,7 @@
         })();
     </script>
 
-    <!-- ========== 新增 JavaScript（独立，不触碰原有） ========== -->
+    <!-- ========== 新增 JavaScript（仅负责回放，不触碰原有逻辑） ========== -->
     <script>
         (function() {
             'use strict';
@@ -1474,21 +1467,19 @@
             const bgMusic = document.getElementById('bgMusic');
             const volumeSlider = document.getElementById('volumeSlider');
 
-            // 新增回放元素
+            // 回放相关
             const replayBtn = document.getElementById('replayBtn');
             const replayLangSelection = document.getElementById('replayLangSelection');
             const replayLangBtns = replayLangSelection.querySelectorAll('.lang-btn');
             const replayFrameOverlay = document.getElementById('replayFrameOverlay');
             const replayIframe = document.getElementById('replayIframe');
             const replayCloseBtn = document.getElementById('replayCloseBtn');
-            const replaySkipLink = document.getElementById('replaySkipLink');
 
-            // ---------- 状态变量 ----------
-            let isFirstTime = true;          // 是否首次播放（开场）
+            // ---------- 状态 ----------
+            let isFirstTime = true;
             let isVideoPlaying = false;
-            let isReplayActive = false;      // 是否处于回放模式
 
-            // ---------- 迷雾粒子系统（完全保留原有） ----------
+            // ---------- 迷雾系统（与原有完全一致） ----------
             const ctx = fogCanvas.getContext('2d');
             let width, height;
             let particles = [];
@@ -1598,16 +1589,14 @@
                 }, 6000);
             }
 
-            // ---------- 视频播放（首次启动） ----------
+            // ---------- 首次启动视频 ----------
             function playVideo(lang, isIntro) {
                 if (isVideoPlaying) return;
                 const videoSrc = lang === 'zh' ? 'intro-zh.mp4' : 'intro-bm.mp4';
                 introVideo.src = videoSrc;
                 videoLayer.style.display = 'flex';
                 isVideoPlaying = true;
-                if (!bgMusic.paused) {
-                    bgMusic.pause();
-                }
+                if (!bgMusic.paused) bgMusic.pause();
                 introVideo.play().catch(e => console.warn('Video play error:', e));
             }
 
@@ -1619,16 +1608,10 @@
                 const cx = window.innerWidth / 2;
                 const cy = window.innerHeight / 2;
                 triggerFogDissolve(cx, cy, function() {
-                    if (isFirstTime) {
-                        const vol = parseFloat(volumeSlider.value);
-                        bgMusic.volume = vol;
-                        bgMusic.play().catch(e => console.warn('BGM play error:', e));
-                        isFirstTime = false;
-                    } else {
-                        const vol = parseFloat(volumeSlider.value);
-                        bgMusic.volume = vol;
-                        bgMusic.play().catch(e => console.warn('BGM play error:', e));
-                    }
+                    const vol = parseFloat(volumeSlider.value);
+                    bgMusic.volume = vol;
+                    bgMusic.play().catch(e => console.warn('BGM play error:', e));
+                    isFirstTime = false;
                 });
             }
 
@@ -1642,9 +1625,7 @@
             });
 
             function showLanguageSelection(isIntro) {
-                if (isIntro) {
-                    startBtn.style.display = 'none';
-                }
+                if (isIntro) startBtn.style.display = 'none';
                 langSelection.style.display = 'flex';
                 langSelection.dataset.isIntro = isIntro ? 'true' : 'false';
             }
@@ -1663,37 +1644,29 @@
                 showLanguageSelection(true);
             });
 
-            // ---------- 回放按钮逻辑 ----------
+            // ---------- 回放按钮 ----------
             replayBtn.addEventListener('click', function() {
-                if (isVideoPlaying) return;          // 视频播放中不允许
+                if (isVideoPlaying) return;
                 replayLangSelection.style.display = 'flex';
-                isReplayActive = true;
             });
 
-            // 回放语言选择点击
             replayLangBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const lang = this.dataset.lang;
                     replayLangSelection.style.display = 'none';
-                    // 构造 YouTube 嵌入 URL
                     const videoId = lang === 'zh' ? 'gLST9Dg8odY' : 'YpvqmzYvw5Q';
                     const embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0';
                     replayIframe.src = embedUrl;
                     replayFrameOverlay.style.display = 'flex';
-                    // 暂停背景音乐
-                    if (!bgMusic.paused) {
-                        bgMusic.pause();
-                    }
+                    if (!bgMusic.paused) bgMusic.pause();
                 });
             });
 
-            // 关闭回放（点击关闭按钮或 Skip 链接）
+            // 关闭回放（仅关闭按钮，无 Skip）
             function closeReplay() {
-                if (!replayFrameOverlay.style.display || replayFrameOverlay.style.display === 'none') return;
+                if (replayFrameOverlay.style.display === 'none') return;
                 replayFrameOverlay.style.display = 'none';
                 replayIframe.src = 'about:blank';
-                isReplayActive = false;
-                // 触发迷雾消散并恢复音乐
                 const cx = window.innerWidth / 2;
                 const cy = window.innerHeight / 2;
                 triggerFogDissolve(cx, cy, function() {
@@ -1704,16 +1677,13 @@
             }
 
             replayCloseBtn.addEventListener('click', closeReplay);
-            replaySkipLink.addEventListener('click', closeReplay);
 
-            // 点击外部关闭（点击背景）
+            // 点击背景也可关闭
             replayFrameOverlay.addEventListener('click', function(e) {
-                if (e.target === replayFrameOverlay) {
-                    closeReplay();
-                }
+                if (e.target === replayFrameOverlay) closeReplay();
             });
 
-            console.log('新增回放按钮已加载（独立，不触碰原有代码）');
+            console.log('回放功能已加载（仅关闭按钮，Skip 保留给 intro 视频）');
         })();
     </script>
 
